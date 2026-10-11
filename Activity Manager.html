@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniPlanner Ultimate - Windows 11 Suite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        win: {
+                            bg: '#090d16',
+                            card: '#131b2e',
+                            border: '#212d4a',
+                            hover: '#2a3a5e',
+                            accent: '#3b82f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel { backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 font-sans antialiased flex flex-col overflow-hidden transition-colors duration-200">
+
+    <!-- Top Countdown Alert Banner -->
+    <div id="urgentBanner" class="bg-gradient-to-r from-rose-900/90 via-amber-900/90 to-rose-900/90 border-b border-rose-500/30 px-4 py-2 text-xs flex items-center justify-between shrink-0 shadow-lg">
+        <div class="flex items-center space-x-2 truncate">
+            <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white font-bold uppercase tracking-wider text-[10px] animate-pulse">Next Deadline</span>
+            <span id="bannerTitle" class="font-semibold text-white truncate">No urgent deadlines pending</span>
+            <span id="bannerTime" class="text-rose-200 font-mono hidden sm:inline"></span>
+        </div>
+        <div class="flex items-center space-x-3 shrink-0">
+            <span id="bannerCountdown" class="font-bold text-amber-300 font-mono bg-black/40 px-2 py-0.5 rounded border border-amber-500/30">--:--:--</span>
+            <button onclick="requestNotificationPermission()" class="hover:text-amber-200 text-amber-400 transition" title="Enable Desktop Notifications"><i class="fa-solid fa-bell"></i></button>
+        </div>
+    </div>
+
+    <!-- App Header & Navigation -->
+    <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center justify-between shrink-0 shadow-md">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <i class="fa-solid fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                    UniPlanner <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Pro Suite</span>
+                </h1>
+                <p class="text-xs text-slate-400">Windows 11 University & Group Collaboration Engine</p>
+            </div>
+        </div>
+
+        <nav class="flex items-center space-x-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800 my-2 sm:my-0">
+            <button onclick="switchTab('calendar')" id="tabBtn-calendar" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 transition flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days"></i> Calendar & Tasks
+            </button>
+            <button onclick="switchTab('timetable')" id="tabBtn-timetable" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-clock"></i> Timetable & Faculty
+            </button>
+            <button onclick="switchTab('grades')" id="tabBtn-grades" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-calculator"></i> Grade & GPA Tracker
+            </button>
+            <button onclick="switchTab('pomodoro')" id="tabBtn-pomodoro" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-stopwatch"></i> Focus Timer
+            </button>
+        </nav>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="exportToWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5" title="Copy formatted WhatsApp summary">
+                <i class="fa-brands fa-whatsapp text-sm"></i> <span class="hidden md:inline">WhatsApp</span>
+            </button>
+            <button onclick="exportICalendar()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5" title="Export to Google/Outlook Calendar">
+                <i class="fa-solid fa-file-export"></i> <span class="hidden md:inline">iCal</span>
+            </button>
+            <button onclick="openCloudSyncModal()" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5" title="Automated Cloud Sync Settings">
+                <i class="fa-solid fa-cloud"></i> <span class="hidden md:inline">Cloud Sync</span>
+            </button>
+            <button onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition border border-slate-700" title="Backup & Restore Data">
+                <i class="fa-solid fa-database"></i>
+            </button>
+            <button onclick="openEventModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> <span>Add Event</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE VIEWS -->
+    <main class="flex-1 overflow-hidden p-4 lg:p-6 relative">
+
+        <!-- TAB 1: CALENDAR VIEW -->
+        <div id="tab-calendar" class="tab-content h-full flex flex-col lg:flex-row gap-6">
+            <section class="flex-1 flex flex-col bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <h2 id="monthYearDisplay" class="text-xl font-bold tracking-tight text-white min-w-[180px]">October 2026</h2>
+                        <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-xl p-1">
+                            <button onclick="changeMonth(-1)" class="w-7 h-7 rounded-lg hover:bg-slate-700 flex items-center justify-center text-slate-300 transition"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                            <button onclick="goToToday()" class="px-2.5 py-0.5 text-xs font-semibold hover:bg-slate-700 rounded-lg text-slate-200 transition">Today</button>
+                            <button onclick="changeMonth(1)" class="w-7 h-7 rounded-lg hover:bg-slate-700 flex items-center justify-center text-slate-300 transition"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1">
+                            <i class="fa-solid fa-filter text-xs text-slate-400"></i>
+                            <select id="memberFilterSelect" onchange="renderCalendar(); renderUpcomingDeadlines();" class="bg-transparent text-xs text-slate-200 focus:outline-none">
+                                <option value="ALL">Filter: All Members</option>
+                            </select>
+                        </div>
+                        <div class="hidden xl:flex items-center gap-2 text-[11px] text-slate-400">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Quiz</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Assign.</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Group</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Presentation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 bg-slate-900 border-b border-slate-800 text-center py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <span class="text-rose-400">Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="text-rose-400">Sat</span>
+                </div>
+
+                <div id="calendarGrid" class="flex-1 grid grid-cols-7 grid-rows-5 bg-slate-800 gap-[1px] overflow-y-auto"></div>
+            </section>
+
+            <aside class="w-full lg:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col max-h-[50vh]">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-clock text-blue-400"></i> Upcoming Deadlines</h3>
+                        <span id="deadlineCountBadge" class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30">0 active</span>
+                    </div>
+                    <div id="upcomingDeadlinesList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col flex-1 min-h-[180px]">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-note-sticky text-amber-400"></i> Quick Notes</h3>
+                        <span class="text-[10px] text-slate-500">Auto-saved</span>
+                    </div>
+                    <textarea id="quickNotesArea" oninput="saveQuickNotes()" placeholder="Jot down room numbers, teacher office hours, zoom links..." class="w-full flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                </div>
+            </aside>
+        </div>
+
+        <!-- TAB 2: TIMETABLE & FACULTY -->
+        <div id="tab-timetable" class="tab-content h-full hidden flex flex-col lg:flex-row gap-6 overflow-y-auto">
+            <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-week text-indigo-400"></i> Weekly Class Timetable</h3>
+                        <p class="text-xs text-slate-400">Recurring lectures, lab locations, and class times</p>
+                    </div>
+                    <button onclick="openTimetableModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Class</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1 overflow-y-auto" id="timetableGrid"></div>
+            </div>
+
+            <div class="w-full lg:w-96 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user-tie text-emerald-400"></i> Instructor Directory</h3>
+                        <p class="text-xs text-slate-400">Emails, office hours & rooms</p>
+                    </div>
+                    <button onclick="openFacultyModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Faculty</button>
+                </div>
+                <div id="facultyList" class="space-y-3 flex-1 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: GRADE & GPA TRACKER -->
+        <div id="tab-grades" class="tab-content h-full hidden flex flex-col lg:flex-row gap-6 overflow-y-auto">
+            <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-amber-400"></i> Course Grade Estimator</h3>
+                        <p class="text-xs text-slate-400">Log scores and assignment weights to track overall subject percentage</p>
+                    </div>
+                    <button onclick="openGradeModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Score Entry</button>
+                </div>
+                <div id="courseGradeCards" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto flex-1"></div>
+            </div>
+
+            <div class="w-full lg:w-80 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+                <div>
+                    <h4 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-chart-pie text-blue-400 mr-2"></i>GPA Overview</h4>
+                    <p class="text-xs text-slate-400 mb-6">Estimated aggregate based on logged course percentages.</p>
+                    <div class="text-center p-6 bg-slate-950/80 border border-slate-800 rounded-2xl">
+                        <span class="text-xs uppercase tracking-wider text-slate-500 block mb-1">Estimated GPA</span>
+                        <span id="estimatedGpaDisplay" class="text-5xl font-extrabold text-blue-400">3.85</span>
+                        <span class="text-xs text-slate-400 block mt-2">Scale 4.0</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs text-blue-300">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Keep individual assessment weights totaling 100% per course for highest accuracy.
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: POMODORO FOCUS TIMER -->
+        <div id="tab-pomodoro" class="tab-content h-full hidden flex items-center justify-center">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full max-w-md text-center flex flex-col items-center">
+                <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 text-2xl mb-4">
+                    <i class="fa-solid fa-stopwatch"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-1">Pomodoro Study Timer</h3>
+                <p class="text-xs text-slate-400 mb-6">Stay laser-focused during study sessions</p>
+
+                <div class="flex bg-slate-950 border border-slate-800 rounded-xl p-1 mb-8 w-full">
+                    <button onclick="setTimerMode('work')" id="pomoBtn-work" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white bg-rose-600 transition">Focus (25m)</button>
+                    <button onclick="setTimerMode('short')" id="pomoBtn-short" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 transition">Short Break (5m)</button>
+                    <button onclick="setTimerMode('long')" id="pomoBtn-long" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 transition">Long Break (15m)</button>
+                </div>
+
+                <div class="text-6xl font-extrabold font-mono tracking-wider text-white mb-8 bg-slate-950/80 border border-slate-800 px-8 py-6 rounded-2xl w-full shadow-inner">
+                    <span id="pomoDisplay">25:00</span>
+                </div>
+
+                <div class="flex items-center space-x-4 mb-6">
+                    <button onclick="toggleTimer()" id="pomoStartBtn" class="bg-rose-600 hover:bg-rose-500 text-white px-8 py-3 rounded-2xl font-bold text-sm transition shadow-lg shadow-rose-600/30 flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Start
+                    </button>
+                    <button onclick="resetTimer()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 w-12 h-12 rounded-2xl flex items-center justify-center transition border border-slate-700">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> Completed Focus Sessions Today: <span id="pomoSessionsCount" class="font-bold text-slate-300">0</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- EVENT MODAL -->
+    <div id="eventModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <h3 id="modalTitle" class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-plus text-blue-500"></i> Event / Task Details</h3>
+                <button onclick="closeEventModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="eventId">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Title *</label>
+                    <input type="text" id="eventTitleInput" placeholder="e.g. CS301 Presentation" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Category</label>
+                        <select id="eventCategoryInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                            <option value="quiz">🔴 Quiz / Exam</option>
+                            <option value="assignment">🔵 Assignment</option>
+                            <option value="group">🟣 Group Project</option>
+                            <option value="presentation">🟢 Presentation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Date *</label>
+                        <input type="date" id="eventDateInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Time</label>
+                        <input type="time" id="eventTimeInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Priority</label>
+                        <select id="eventPriorityInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                            <option value="high">High Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Description / Links (URLs auto-linkify)</label>
+                    <textarea id="eventDescInput" rows="2" placeholder="Syllabus chapters, submission link (https://...)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Team Members & Sub-tasks Section -->
+                <div class="border border-purple-500/30 bg-purple-950/10 rounded-xl p-4 space-y-3">
+                    <h4 class="text-xs font-bold text-purple-300 flex items-center gap-1.5"><i class="fa-solid fa-users"></i> Team Members & Roles</h4>
+                    <div id="teamMembersList" class="space-y-2"></div>
+                    <button type="button" onclick="addTeamMemberRow()" class="text-xs text-purple-400 hover:underline">+ Add Team Member</button>
+
+                    <h4 class="text-xs font-bold text-purple-300 pt-2 border-t border-purple-500/20 flex items-center gap-1.5"><i class="fa-solid fa-list-check"></i> Sub-task Milestones</h4>
+                    <div id="subtasksList" class="space-y-2"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="newSubtaskInput" placeholder="New sub-task..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1 text-xs text-white">
+                        <button type="button" onclick="addSubtask()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded-xl text-xs">Add</button>
+                    </div>
+
+                    <!-- Group Project Message Board & Activity Feed -->
+                    <h4 class="text-xs font-bold text-purple-300 pt-2 border-t border-purple-500/20 flex items-center gap-1.5"><i class="fa-solid fa-comments"></i> Message Board & Activity Feed</h4>
+                    <div id="messageBoardList" class="space-y-2 max-h-32 overflow-y-auto pr-1"></div>
+                    <div class="flex flex-col gap-2 pt-1">
+                        <input type="text" id="msgAuthorInput" placeholder="Your name..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1 text-xs text-white">
+                        <div class="flex gap-2">
+                            <input type="text" id="msgTextInput" placeholder="Post status update (e.g., Finished slides)..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1 text-xs text-white">
+                            <button type="button" onclick="addMessageBoardPost()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded-xl text-xs">Post</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-3 border-t border-slate-800 flex justify-between">
+                <button type="button" id="deleteEventBtn" onclick="deleteCurrentEvent()" class="hidden text-rose-400 text-xs hover:underline">Delete Event</button>
+                <div class="flex space-x-2 ml-auto">
+                    <button type="button" onclick="closeEventModal()" class="px-4 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                    <button type="button" onclick="saveEvent()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-xl text-xs font-medium">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLOUD SYNC SETTINGS MODAL -->
+    <div id="cloudSyncModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-cloud text-sky-400 mr-2"></i>Automated Cloud Sync</h3>
+                <button onclick="closeCloudSyncModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Sync your schedule across devices automatically using a free JSONBin.io bin.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">JSONBin Master Key / API Key</label>
+                    <input type="password" id="syncApiKey" placeholder="$2a$10$..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Bin ID</label>
+                    <input type="text" id="syncBinId" placeholder="65a..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="testAndPullCloudData()" class="text-sky-400 text-xs hover:underline"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Pull From Cloud Now</button>
+                <div class="flex space-x-2">
+                    <button onclick="closeCloudSyncModal()" class="px-4 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                    <button onclick="saveCloudSyncSettings()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-1.5 rounded-xl text-xs font-medium">Save & Sync</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMETABLE MODAL -->
+    <div id="timetableModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-clock text-indigo-400 mr-2"></i>Add Class Schedule</h3>
+                <button onclick="closeTimetableModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Course Name *</label>
+                    <input type="text" id="ttCourseName" placeholder="e.g. Data Structures (CS201)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Day of Week</label>
+                        <select id="ttDay" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Time</label>
+                        <input type="text" id="ttTime" placeholder="10:00 AM - 11:30 AM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Location / Room</label>
+                    <input type="text" id="ttLocation" placeholder="Hall B, Lab 3" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeTimetableModal()" class="px-4 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                <button onclick="saveTimetableClass()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-medium">Save Class</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FACULTY MODAL -->
+    <div id="facultyModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-user-tie text-emerald-400 mr-2"></i>Add Faculty Member</h3>
+                <button onclick="closeFacultyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Instructor Name *</label>
+                    <input type="text" id="facName" placeholder="Dr. Alan Turing" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Email</label>
+                    <input type="email" id="facEmail" placeholder="alan.turing@uni.edu" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Office Hours</label>
+                        <input type="text" id="facHours" placeholder="Wed 2-4 PM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Office Room</label>
+                        <input type="text" id="facRoom" placeholder="Room 402" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeFacultyModal()" class="px-4 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                <button onclick="saveFacultyMember()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-xl text-xs font-medium">Save Faculty</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRADE MODAL -->
+    <div id="gradeModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-calculator text-amber-400 mr-2"></i>Add Score / Course Grade</h3>
+                <button onclick="closeGradeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Course Name *</label>
+                    <input type="text" id="gradeCourse" placeholder="e.g. Operating Systems" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Assessment Title</label>
+                    <input type="text" id="gradeTitle" placeholder="Midterm Exam / Final Project" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Score Obtained (%)</label>
+                        <input type="number" id="gradeScore" placeholder="88" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Weight (%)</label>
+                        <input type="number" id="gradeWeight" placeholder="30" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeGradeModal()" class="px-4 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-slate-800">Cancel</button>
+                <button onclick="saveGradeEntry()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-1.5 rounded-xl text-xs font-medium">Save Score</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BACKUP & RESTORE MODAL -->
+    <div id="backupModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-database text-blue-400 mr-2"></i>Data Backup & Restore</h3>
+                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Save a JSON backup file to your Windows PC or import an existing backup.</p>
+            <div class="flex flex-col gap-2">
+                <button onclick="downloadBackupJSON()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-xl text-xs font-medium"><i class="fa-solid fa-download mr-1"></i> Export JSON Backup</button>
+                <label class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-medium text-center cursor-pointer border border-slate-700 block">
+                    <i class="fa-solid fa-upload mr-1"></i> Import JSON Backup
+                    <input type="file" id="importJsonInput" accept=".json" onchange="importBackupJSON(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMessage" class="text-xs font-medium">Notification message</span>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let events = [];
+        let timetable = [];
+        let faculty = [];
+        let grades = [];
+        let editingEventId = null;
+        let activeTeamMembers = [];
+        let activeSubtasks = [];
+        let activeMessages = [];
+
+        let timerInterval = null;
+        let pomoSeconds = 25 * 60;
+        let timerMode = 'work';
+        let timerRunning = false;
+        let completedSessions = 0;
+
+        window.onload = async function() {
+            loadLocalData();
+            await pullCloudDataOnStartup();
+            renderCalendar();
+            renderUpcomingDeadlines();
+            renderTimetable();
+            renderFaculty();
+            renderGrades();
+            startCountdownBannerTimer();
+            updateMemberFilterOptions();
+        };
+
+        function loadLocalData() {
+            events = JSON.parse(localStorage.getItem('uni_events')) || [];
+            timetable = JSON.parse(localStorage.getItem('uni_timetable')) || [];
+            faculty = JSON.parse(localStorage.getItem('uni_faculty')) || [];
+            grades = JSON.parse(localStorage.getItem('uni_grades')) || [];
+            document.getElementById('quickNotesArea').value = localStorage.getItem('uni_notes') || '';
+            document.getElementById('syncApiKey').value = localStorage.getItem('uni_sync_key') || '';
+            document.getElementById('syncBinId').value = localStorage.getItem('uni_sync_bin') || '';
+        }
+
+        function saveAllData() {
+            localStorage.setItem('uni_events', JSON.stringify(events));
+            localStorage.setItem('uni_timetable', JSON.stringify(timetable));
+            localStorage.setItem('uni_faculty', JSON.stringify(faculty));
+            localStorage.setItem('uni_grades', JSON.stringify(grades));
+            updateMemberFilterOptions();
+            syncToCloud();
+        }
+
+        function saveQuickNotes() {
+            localStorage.setItem('uni_notes', document.getElementById('quickNotesArea').value);
+        }
+
+        // Automated Cloud Sync (JSONBin.io)
+        async function syncToCloud() {
+            const apiKey = localStorage.getItem('uni_sync_key');
+            const binId = localStorage.getItem('uni_sync_bin');
+            if(!apiKey || !binId) return;
+
+            const payload = { events, timetable, faculty, grades, notes: document.getElementById('quickNotesArea').value };
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': apiKey
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } catch(err) {
+                console.error("Cloud sync push failed", err);
+            }
+        }
+
+        async function pullCloudDataOnStartup() {
+            const apiKey = localStorage.getItem('uni_sync_key');
+            const binId = localStorage.getItem('uni_sync_bin');
+            if(!apiKey || !binId) return;
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { 'X-Master-Key': apiKey }
+                });
+                if(res.ok) {
+                    const json = await res.json();
+                    const data = json.record;
+                    if(data) {
+                        if(data.events) events = data.events;
+                        if(data.timetable) timetable = data.timetable;
+                        if(data.faculty) faculty = data.faculty;
+                        if(data.grades) grades = data.grades;
+                        if(data.notes !== undefined) {
+                            document.getElementById('quickNotesArea').value = data.notes;
+                            localStorage.setItem('uni_notes', data.notes);
+                        }
+                        localStorage.setItem('uni_events', JSON.stringify(events));
+                        localStorage.setItem('uni_timetable', JSON.stringify(timetable));
+                        localStorage.setItem('uni_faculty', JSON.stringify(faculty));
+                        localStorage.setItem('uni_grades', JSON.stringify(grades));
+                    }
+                }
+            } catch(err) {
+                console.error("Cloud sync pull failed", err);
+            }
+        }
+
+        function openCloudSyncModal() { document.getElementById('cloudSyncModal').classList.remove('hidden'); }
+        function closeCloudSyncModal() { document.getElementById('cloudSyncModal').classList.add('hidden'); }
+
+        async function saveCloudSyncSettings() {
+            const apiKey = document.getElementById('syncApiKey').value.trim();
+            const binId = document.getElementById('syncBinId').value.trim();
+            localStorage.setItem('uni_sync_key', apiKey);
+            localStorage.setItem('uni_sync_bin', binId);
+            closeCloudSyncModal();
+            showToast('Cloud sync settings saved! Testing sync...');
+            await syncToCloud();
+            showToast('Cloud sync active!');
+        }
+
+        async function testAndPullCloudData() {
+            const apiKey = document.getElementById('syncApiKey').value.trim();
+            const binId = document.getElementById('syncBinId').value.trim();
+            if(!apiKey || !binId) { showToast('Enter API Key and Bin ID first', 'error'); return; }
+            localStorage.setItem('uni_sync_key', apiKey);
+            localStorage.setItem('uni_sync_bin', binId);
+            await pullCloudDataOnStartup();
+            renderCalendar();
+            renderUpcomingDeadlines();
+            renderTimetable();
+            renderFaculty();
+            renderGrades();
+            showToast('Pulled latest data from cloud successfully!');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tabBtn-${tabId}`).classList.add('bg-blue-600', 'text-white');
+        }
+
+        function updateMemberFilterOptions() {
+            const select = document.getElementById('memberFilterSelect');
+            const currentVal = select.value;
+            const members = new Set();
+            events.forEach(e => {
+                if (e.teamMembers) e.teamMembers.forEach(m => { if(m.name) members.add(m.name); });
+            });
+
+            select.innerHTML = '<option value="ALL">Filter: All Members</option>';
+            members.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = `Member: ${m}`;
+                select.appendChild(opt);
+            });
+            select.value = currentVal;
+        }
+
+        function linkifyText(text) {
+            if (!text) return '';
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, '<a href="$1" target="_blank" class="text-blue-400 underline hover:text-blue-300">$1</a>');
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const selectedMember = document.getElementById('memberFilterSelect').value;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let dayCounter = 1;
+            for (let i = 0; i < 35; i++) {
+                const cell = document.createElement('div');
+                cell.className = "bg-slate-900/60 p-2 flex flex-col justify-between transition hover:bg-slate-800/80 cursor-pointer min-h-[85px]";
+
+                if (i >= firstDayIndex && dayCounter <= totalDays) {
+                    const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`;
+                    const isToday = cellDateStr === todayStr;
+
+                    cell.innerHTML = `<div class="flex items-center justify-between"><span class="text-xs font-semibold ${isToday ? 'bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow' : 'text-slate-300'}">${dayCounter}</span></div>`;
+                    cell.onclick = () => openEventModalForDate(cellDateStr);
+
+                    let dayEvts = events.filter(e => e.date === cellDateStr);
+                    if (selectedMember !== 'ALL') {
+                        dayEvts = dayEvts.filter(e => e.teamMembers && e.teamMembers.some(m => m.name === selectedMember));
+                    }
+
+                    if (dayEvts.length > 0) {
+                        const evContainer = document.createElement('div');
+                        evContainer.className = "mt-1 space-y-1 overflow-hidden";
+                        dayEvts.forEach(evt => {
+                            const badge = document.createElement('div');
+                            let dotColor = 'bg-blue-500';
+                            if (evt.category === 'quiz') dotColor = 'bg-rose-500';
+                            if (evt.category === 'group') dotColor = 'bg-purple-500';
+                            if (evt.category === 'presentation') dotColor = 'bg-emerald-500';
+
+                            badge.className = "text-[10px] truncate px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 flex items-center gap-1 border border-slate-700/60";
+                            badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> <span class="truncate">${evt.title}</span>`;
+                            badge.onclick = (e) => { e.stopPropagation(); editEvent(evt.id); };
+                            evContainer.appendChild(badge);
+                        });
+                        cell.appendChild(evContainer);
+                    }
+                    dayCounter++;
+                } else {
+                    cell.classList.add('opacity-30');
+                }
+                grid.appendChild(cell);
+            }
+        }
+
+        function changeMonth(dir) { currentDate.setMonth(currentDate.getMonth() + dir); renderCalendar(); }
+        function goToToday() { currentDate = new Date(); renderCalendar(); }
+
+        function renderUpcomingDeadlines() {
+            const list = document.getElementById('upcomingDeadlinesList');
+            list.innerHTML = '';
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let active = events.filter(e => e.date >= todayStr).sort((a,b) => new Date(a.date) - new Date(b.date));
+            document.getElementById('deadlineCountBadge').textContent = `${active.length} active`;
+
+            if(active.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No upcoming deadlines.</p>`;
+                return;
+            }
+
+            active.forEach(evt => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 hover:border-slate-700 transition cursor-pointer";
+                item.onclick = () => editEvent(evt.id);
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-semibold text-white truncate">${evt.title}</h4>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">${evt.category}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 mt-1 flex justify-between">
+                        <span><i class="fa-regular fa-calendar mr-1"></i>${evt.date}</span>
+                        <span>${evt.time || ''}</span>
+                    </div>
+                    ${evt.description ? `<div class="text-[10px] text-slate-300 mt-1 truncate">${linkifyText(evt.description)}</div>` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function startCountdownBannerTimer() {
+            setInterval(() => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const upcoming = events.filter(e => e.date >= todayStr).sort((a,b) => new Date(a.date + 'T' + (a.time || '23:59')) - new Date(b.date + 'T' + (b.time || '23:59')));
+
+                if (upcoming.length === 0) {
+                    document.getElementById('bannerTitle').textContent = "No urgent deadlines pending";
+                    document.getElementById('bannerCountdown').textContent = "--:--:--";
+                    return;
+                }
+
+                const target = upcoming[0];
+                const targetDate = new Date(`${target.date}T${target.time || '23:59:00'}`);
+                const now = new Date();
+                const diff = targetDate - now;
+
+                if (diff <= 0) {
+                    document.getElementById('bannerTitle').textContent = `DUE NOW: ${target.title}`;
+                    document.getElementById('bannerCountdown').textContent = "00:00:00";
+                    triggerDesktopNotification(`Deadline Reached: ${target.title}`, `This event is due right now!`);
+                } else {
+                    const hrs = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                    document.getElementById('bannerTitle').textContent = `${target.title} (${target.date})`;
+                    document.getElementById('bannerCountdown').textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast('Desktop notifications enabled!');
+                        new Notification("UniPlanner Pro", { body: "Notifications are now active for upcoming deadlines." });
+                    } else {
+                        showToast('Notification permission denied.', 'error');
+                    }
+                });
+            } else {
+                showToast('Browser does not support notifications.', 'error');
+            }
+        }
+
+        function triggerDesktopNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { body });
+            }
+        }
+
+        function exportToWhatsApp() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const active = events.filter(e => e.date >= todayStr);
+
+            if (active.length === 0) { showToast('No upcoming events to export.', 'error'); return; }
+
+            let text = "🎓 *UNIPLANNER GROUP SCHEDULE SUMMARY* 🎓\n\n";
+            active.forEach(e => {
+                text += `📌 *${e.title}*\n📅 Due: ${e.date} @ ${e.time || '23:59'}\n`;
+                if(e.description) text += `🔗 Note/Link: ${e.description}\n`;
+                if(e.teamMembers && e.teamMembers.length) {
+                    text += `👥 *Members:* ` + e.teamMembers.map(m => `${m.name} (${m.role})`).join(', ') + `\n`;
+                }
+                if(e.messages && e.messages.length) {
+                    text += `💬 *Latest Updates:* ` + e.messages.slice(-1).map(msg => `${msg.author}: ${msg.text}`).join('') + `\n`;
+                }
+                text += `---------------------------\n`;
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('WhatsApp summary copied to clipboard!');
+            }).catch(() => showToast('Failed copying to clipboard.', 'error'));
+        }
+
+        function exportICalendar() {
+            if(events.length === 0) { showToast('No events to export.', 'error'); return; }
+
+            let icsMsg = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//UniPlanner Pro//EN\n";
+            events.forEach(e => {
+                const dateClean = e.date.replace(/-/g, '');
+                icsMsg += "BEGIN:VEVENT\n";
+                icsMsg += `SUMMARY:${e.title}\n`;
+                icsMsg += `DTSTART:${dateClean}\n`;
+                icsMsg += `DESCRIPTION:${e.description || ''}\n`;
+                icsMsg += "END:VEVENT\n";
+            });
+            icsMsg += "END:VCALENDAR";
+
+            const blob = new Blob([icsMsg], { type: 'text/calendar' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'uniplanner_schedule.ics';
+            link.click();
+            showToast('Exported .ics calendar file!');
+        }
+
+        function openBackupModal() { document.getElementById('backupModal').classList.remove('hidden'); }
+        function closeBackupModal() { document.getElementById('backupModal').classList.add('hidden'); }
+
+        function downloadBackupJSON() {
+            const data = { events, timetable, faculty, grades, notes: document.getElementById('quickNotesArea').value };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `uniplanner_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('Backup JSON downloaded!');
+        }
+
+        function importBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.events) events = data.events;
+                    if(data.timetable) timetable = data.timetable;
+                    if(data.faculty) faculty = data.faculty;
+                    if(data.grades) grades = data.grades;
+                    saveAllData();
+                    location.reload();
+                } catch(err) {
+                    showToast('Invalid backup file formatting.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function setTimerMode(mode) {
+            timerMode = mode;
+            if(mode === 'work') pomoSeconds = 25 * 60;
+            if(mode === 'short') pomoSeconds = 5 * 60;
+            if(mode === 'long') pomoSeconds = 15 * 60;
+
+            document.querySelectorAll('#tab-pomodoro button[id^="pomoBtn-"]').forEach(b => b.classList.replace('bg-rose-600', 'text-slate-400'));
+            document.getElementById(`pomoBtn-${mode}`).classList.add('bg-rose-600', 'text-white');
+            updatePomoDisplay();
+        }
+
+        function toggleTimer() {
+            if(timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                document.getElementById('pomoStartBtn').innerHTML = `<i class="fa-solid fa-play"></i> Start`;
+            } else {
+                timerRunning = true;
+                document.getElementById('pomoStartBtn').innerHTML = `<i class="fa-solid fa-pause"></i> Pause`;
+                timerInterval = setInterval(() => {
+                    pomoSeconds--;
+                    updatePomoDisplay();
+                    if(pomoSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        completedSessions++;
+                        document.getElementById('pomoSessionsCount').textContent = completedSessions;
+                        showToast('Pomodoro session complete! Great job!');
+                        triggerDesktopNotification("Focus Timer", "Pomodoro study session complete!");
+                        setTimerMode('work');
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            setTimerMode(timerMode);
+            document.getElementById('pomoStartBtn').innerHTML = `<i class="fa-solid fa-play"></i> Start`;
+        }
+
+        function updatePomoDisplay() {
+            const m = Math.floor(pomoSeconds / 60);
+            const s = pomoSeconds % 60;
+            document.getElementById('pomoDisplay').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        // Event Modal Controls
+        function openEventModal() {
+            editingEventId = null;
+            document.getElementById('deleteEventBtn').classList.add('hidden');
+            document.getElementById('eventTitleInput').value = '';
+            document.getElementById('eventCategoryInput').value = 'quiz';
+            document.getElementById('eventDateInput').value = new Date().toISOString().split('T')[0];
+            document.getElementById('eventDescInput').value = '';
+            activeTeamMembers = [];
+            activeSubtasks = [];
+            activeMessages = [];
+            renderTeamMembers();
+            renderSubtasks();
+            renderMessageBoard();
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+
+        function openEventModalForDate(dateStr) {
+            openEventModal();
+            document.getElementById('eventDateInput').value = dateStr;
+        }
+
+        function editEvent(id) {
+            const evt = events.find(e => e.id === id);
+            if (!evt) return;
+            editingEventId = id;
+            document.getElementById('deleteEventBtn').classList.remove('hidden');
+            document.getElementById('eventTitleInput').value = evt.title;
+            document.getElementById('eventCategoryInput').value = evt.category;
+            document.getElementById('eventDateInput').value = evt.date;
+            document.getElementById('eventTimeInput').value = evt.time || '';
+            document.getElementById('eventPriorityInput').value = evt.priority || 'medium';
+            document.getElementById('eventDescInput').value = evt.description || '';
+            activeTeamMembers = evt.teamMembers ? [...evt.teamMembers] : [];
+            activeSubtasks = evt.subtasks ? [...evt.subtasks] : [];
+            activeMessages = evt.messages ? [...evt.messages] : [];
+            renderTeamMembers();
+            renderSubtasks();
+            renderMessageBoard();
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+
+        function closeEventModal() { document.getElementById('eventModal').classList.add('hidden'); }
+
+        function addTeamMemberRow(name = '', role = '') {
+            activeTeamMembers.push({ name, role });
+            renderTeamMembers();
+        }
+
+        function renderTeamMembers() {
+            const c = document.getElementById('teamMembersList');
+            c.innerHTML = '';
+            activeTeamMembers.forEach((m, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex gap-2";
+                div.innerHTML = `
+                    <input type="text" placeholder="Name" value="${m.name}" oninput="activeTeamMembers[${idx}].name=this.value" class="flex-1 bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white">
+                    <input type="text" placeholder="Role" value="${m.role}" oninput="activeTeamMembers[${idx}].role=this.value" class="flex-1 bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white">
+                    <button type="button" onclick="activeTeamMembers.splice(${idx},1); renderTeamMembers();" class="text-rose-400 px-2"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                c.appendChild(div);
+            });
+        }
+
+        function addSubtask() {
+            const val = document.getElementById('newSubtaskInput').value.trim();
+            if(val) {
+                activeSubtasks.push({ text: val, completed: false });
+                document.getElementById('newSubtaskInput').value = '';
+                renderSubtasks();
+            }
+        }
+
+        function renderSubtasks() {
+            const c = document.getElementById('subtasksList');
+            c.innerHTML = '';
+            activeSubtasks.forEach((s, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between bg-slate-950 p-1.5 rounded border border-slate-800 text-xs";
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" ${s.completed ? 'checked' : ''} onchange="activeSubtasks[${idx}].completed = !activeSubtasks[${idx}].completed; renderSubtasks();">
+                        <span class="${s.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${s.text}</span>
+                    </label>
+                    <button type="button" onclick="activeSubtasks.splice(${idx},1); renderSubtasks();" class="text-rose-400"><i class="fa-solid fa-trash text-xs"></i></button>
+                `;
+                c.appendChild(div);
+            });
+        }
+
+        function addMessageBoardPost() {
+            const author = document.getElementById('msgAuthorInput').value.trim();
+            const text = document.getElementById('msgTextInput').value.trim();
+            if(!author || !text) { showToast('Author and message required', 'error'); return; }
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            activeMessages.push({ author, text, time: timeStr });
+            document.getElementById('msgTextInput').value = '';
+            renderMessageBoard();
+        }
+
+        function renderMessageBoard() {
+            const c = document.getElementById('messageBoardList');
+            c.innerHTML = '';
+            if(activeMessages.length === 0) {
+                c.innerHTML = `<p class="text-[10px] text-slate-500 italic">No updates posted yet.</p>`;
+                return;
+            }
+            activeMessages.forEach((msg, idx) => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-950 p-2 rounded border border-slate-800 text-xs space-y-0.5";
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-purple-300 text-[11px]">${msg.author}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-slate-500">${msg.time}</span>
+                            <button type="button" onclick="activeMessages.splice(${idx},1); renderMessageBoard();" class="text-rose-400 text-[10px]"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-slate-200 text-[11px]">${msg.text}</p>
+                `;
+                c.appendChild(div);
+            });
+        }
+
+        function saveEvent() {
+            const title = document.getElementById('eventTitleInput').value.trim();
+            const date = document.getElementById('eventDateInput').value;
+            if(!title || !date) { showToast('Title and Date are required', 'error'); return; }
+
+            const evtData = {
+                id: editingEventId || 'evt-' + Date.now(),
+                title,
+                category: document.getElementById('eventCategoryInput').value,
+                date,
+                time: document.getElementById('eventTimeInput').value,
+                priority: document.getElementById('eventPriorityInput').value,
+                description: document.getElementById('eventDescInput').value,
+                teamMembers: activeTeamMembers,
+                subtasks: activeSubtasks,
+                messages: activeMessages
+            };
+
+            if(editingEventId) {
+                const idx = events.findIndex(e => e.id === editingEventId);
+                events[idx] = evtData;
+            } else {
+                events.push(evtData);
+            }
+
+            saveAllData();
+            renderCalendar();
+            renderUpcomingDeadlines();
+            closeEventModal();
+            showToast('Event saved & synced!');
+        }
+
+        function deleteCurrentEvent() {
+            if(editingEventId) {
+                events = events.filter(e => e.id !== editingEventId);
+                saveAllData();
+                renderCalendar();
+                renderUpcomingDeadlines();
+                closeEventModal();
+                showToast('Event deleted.');
+            }
+        }
+
+        // Timetable Modal Controls
+        function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
+        function closeTimetableModal() { document.getElementById('timetableModal').classList.add('hidden'); }
+        function saveTimetableClass() {
+            const course = document.getElementById('ttCourseName').value.trim();
+            const day = document.getElementById('ttDay').value;
+            const time = document.getElementById('ttTime').value;
+            const location = document.getElementById('ttLocation').value;
+            if(!course) { showToast('Course name is required', 'error'); return; }
+
+            timetable.push({ id: 'tt-' + Date.now(), course, day, time, location });
+            saveAllData();
+            renderTimetable();
+            closeTimetableModal();
+            showToast('Class schedule saved!');
+        }
+        function renderTimetable() {
+            const grid = document.getElementById('timetableGrid');
+            if(timetable.length === 0) {
+                grid.innerHTML = `<p class="text-xs text-slate-500 col-span-5 text-center py-6">No classes added yet. Click "+ Add Class".</p>`;
+                return;
+            }
+            grid.innerHTML = '';
+            timetable.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-3 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded">${item.day}</span>
+                            <button onclick="timetable.splice(${idx},1); saveAllData(); renderTimetable();" class="text-slate-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <h4 class="text-xs font-semibold text-white mb-1">${item.course}</h4>
+                        <p class="text-[10px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${item.time || 'TBD'}</p>
+                        <p class="text-[10px] text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${item.location || 'TBD'}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Faculty Modal Controls
+        function openFacultyModal() { document.getElementById('facultyModal').classList.remove('hidden'); }
+        function closeFacultyModal() { document.getElementById('facultyModal').classList.add('hidden'); }
+        function saveFacultyMember() {
+            const name = document.getElementById('facName').value.trim();
+            const email = document.getElementById('facEmail').value;
+            const hours = document.getElementById('facHours').value;
+            const room = document.getElementById('facRoom').value;
+            if(!name) { showToast('Instructor name is required', 'error'); return; }
+
+            faculty.push({ id: 'fac-' + Date.now(), name, email, hours, room });
+            saveAllData();
+            renderFaculty();
+            closeFacultyModal();
+            showToast('Faculty member saved!');
+        }
+        function renderFaculty() {
+            const list = document.getElementById('facultyList');
+            if(faculty.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Faculty directory clear.</p>`;
+                return;
+            }
+            list.innerHTML = '';
+            faculty.forEach((f, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-3";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-xs font-semibold text-white">${f.name}</h4>
+                        <button onclick="faculty.splice(${idx},1); saveAllData(); renderFaculty();" class="text-slate-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 truncate"><i class="fa-regular fa-envelope mr-1"></i>${f.email || 'N/A'}</p>
+                    <p class="text-[10px] text-slate-400"><i class="fa-regular fa-calendar-days mr-1"></i>${f.hours || 'N/A'} (${f.room || 'N/A'})</p>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // Grade Modal Controls
+        function openGradeModal() { document.getElementById('gradeModal').classList.remove('hidden'); }
+        function closeGradeModal() { document.getElementById('gradeModal').classList.add('hidden'); }
+        function saveGradeEntry() {
+            const course = document.getElementById('gradeCourse').value.trim();
+            const title = document.getElementById('gradeTitle').value.trim();
+            const score = parseFloat(document.getElementById('gradeScore').value) || 0;
+            const weight = parseFloat(document.getElementById('gradeWeight').value) || 0;
+            if(!course) { showToast('Course name is required', 'error'); return; }
+
+            grades.push({ id: 'gr-' + Date.now(), course, title, score, weight });
+            saveAllData();
+            renderGrades();
+            closeGradeModal();
+            showToast('Grade entry saved!');
+        }
+        function renderGrades() {
+            const container = document.getElementById('courseGradeCards');
+            if(grades.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-6">No grades logged yet. Click "+ Add Score Entry".</p>`;
+                document.getElementById('estimatedGpaDisplay').textContent = "3.85";
+                return;
+            }
+            container.innerHTML = '';
+            
+            const grouped = {};
+            grades.forEach(g => {
+                if(!grouped[g.course]) grouped[g.course] = [];
+                grouped[g.course].push(g);
+            });
+
+            let totalWeightedSum = 0;
+            let totalWeightSum = 0;
+
+            Object.keys(grouped).forEach(courseName => {
+                const entries = grouped[courseName];
+                let courseScoreSum = 0;
+                let courseWeightSum = 0;
+
+                entries.forEach(e => {
+                    courseScoreSum += (e.score * (e.weight / 100));
+                    courseWeightSum += e.weight;
+                });
+
+                totalWeightedSum += courseScoreSum;
+                totalWeightSum += courseWeightSum;
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between";
+                
+                let entriesHtml = entries.map((e, idx) => `
+                    <div class="flex items-center justify-between text-[11px] text-slate-300 py-1 border-b border-slate-800/60">
+                        <span>${e.title || 'Assessment'} (${e.weight}%)</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-amber-400">${e.score}%</span>
+                            <button onclick="grades = grades.filter(x => x.id !== '${e.id}'); saveAllData(); renderGrades();" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div>
+                        <h4 class="text-xs font-bold text-white mb-2 flex items-center justify-between">
+                            <span>${courseName}</span>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded">Total: ${courseWeightSum}%</span>
+                        </h4>
+                        <div class="space-y-1 mb-3">${entriesHtml}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if(totalWeightSum > 0) {
+                const avgPct = (totalWeightedSum / (totalWeightSum / 100));
+                let estGpa = (avgPct / 100) * 4.0;
+                if(estGpa > 4.0) estGpa = 4.0;
+                document.getElementById('estimatedGpaDisplay').textContent = estGpa.toFixed(2);
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = msg;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+    </script>
+</body>
+</html>
