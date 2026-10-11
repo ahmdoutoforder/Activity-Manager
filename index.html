@@ -508,9 +508,10 @@
         let timerRunning = false;
         let completedSessions = 0;
 
-        window.onload = async function() {
+        window.onload = function() {
+            // Render the locally saved app immediately. Do not make the whole UI
+            // wait for the optional cloud-sync request to finish.
             loadLocalData();
-            await pullCloudDataOnStartup();
             renderCalendar();
             renderUpcomingDeadlines();
             renderTimetable();
@@ -518,6 +519,19 @@
             renderGrades();
             startCountdownBannerTimer();
             updateMemberFilterOptions();
+
+            // Cloud sync is optional and may be slow or unavailable. Refresh the
+            // views after it completes, without blocking the initial page render.
+            pullCloudDataOnStartup().then(() => {
+                renderCalendar();
+                renderUpcomingDeadlines();
+                renderTimetable();
+                renderFaculty();
+                renderGrades();
+                updateMemberFilterOptions();
+            }).catch(err => {
+                console.error("Cloud sync pull failed", err);
+            });
         };
 
         function loadLocalData() {
