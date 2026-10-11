@@ -28,13 +28,14 @@ GitHub Pages is static hosting; shared data needs a separate backend. This app u
 5. Enter an email and password and select **Sign in / create account**. If email confirmation is enabled, confirm the message before signing in.
 6. Test on one device first, then sign in to the same account on another device.
 
-### Sync behavior and limitations
+### Sync behavior, study groups and limitations
 
-- Row-level security restricts each authenticated account to its own row.
+- Row-level security restricts each authenticated account to its own personal-data row.
 - Local edits are timestamped; cloud data newer than the local copy prompts before replacing it. Export a backup before resolving a conflict.
-- This is a single-user-per-account snapshot sync, not live multi-user collaboration. For group projects with shared team workspaces, invitations, roles, activity history and real-time merges, a backend with dedicated shared-workspace tables and conflict resolution is still needed.
+- The **Study groups** section supports shared workspaces, shared deadlines, task completion, and inviting an existing account by email. A classmate must sign up in the same Supabase project first. Workspace access is protected by row-level security; workspace owners can invite members.
+- Shared tasks use Supabase tables and are visible to workspace members after refresh/reload. This is shared database collaboration, not a full real-time presence/chat/activity-feed system.
 - The app never claims local-only storage is cross-device sync. A failed cloud request leaves the local copy available and reports a sync error.
-- Avoid editing the same account simultaneously on multiple devices while a conflict is pending; choose the intended copy deliberately.
+- Avoid editing the same personal account simultaneously on multiple devices while a conflict is pending; choose the intended copy deliberately.
 
 ## Notes
 
