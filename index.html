@@ -507,61 +507,50 @@
         let timerRunning = false;
         let completedSessions = 0;
 
-        window.onload = async function() {
-            loadLocalData();
-            await pullCloudDataOnStartup();
-            renderCalendar();
-            renderUpcomingDeadlines();
-            renderTimetable();
-            renderFaculty();
-            renderGrades();
-            startCountdownBannerTimer();
-            updateMemberFilterOptions();
-        };
+       window.onload = async function() {
+        loadLocalData();
+        await pullCloudDataOnStartup(); // Force pull before rendering
+        renderCalendar();
+        renderUpcomingDeadlines();
+        renderTimetable();
+        renderFaculty();
+        renderGrades();
+        startCountdownBannerTimer();
+        updateMemberFilterOptions();
+    };
 
-        function loadLocalData() {
-            events = JSON.parse(localStorage.getItem('uni_events')) || [];
-            timetable = JSON.parse(localStorage.getItem('uni_timetable')) || [];
-            faculty = JSON.parse(localStorage.getItem('uni_faculty')) || [];
-            grades = JSON.parse(localStorage.getItem('uni_grades')) || [];
-            document.getElementById('quickNotesArea').value = localStorage.getItem('uni_notes') || '';
-            document.getElementById('syncApiKey').value = localStorage.getItem('uni_sync_key') || '';
-            document.getElementById('syncBinId').value = localStorage.getItem('uni_sync_bin') || '';
-        }
+    async function pullCloudDataOnStartup() {
+        const apiKey = localStorage.getItem('uni_sync_key');
+        const binId = localStorage.getItem('uni_sync_bin');
+        if(!apiKey || !binId) return;
 
-        function saveAllData() {
-            localStorage.setItem('uni_events', JSON.stringify(events));
-            localStorage.setItem('uni_timetable', JSON.stringify(timetable));
-            localStorage.setItem('uni_faculty', JSON.stringify(faculty));
-            localStorage.setItem('uni_grades', JSON.stringify(grades));
-            updateMemberFilterOptions();
-            syncToCloud();
-        }
-
-        function saveQuickNotes() {
-            localStorage.setItem('uni_notes', document.getElementById('quickNotesArea').value);
-        }
-
-        // Automated Cloud Sync (JSONBin.io)
-        async function syncToCloud() {
-            const apiKey = localStorage.getItem('uni_sync_key');
-            const binId = localStorage.getItem('uni_sync_bin');
-            if(!apiKey || !binId) return;
-
-            const payload = { events, timetable, faculty, grades, notes: document.getElementById('quickNotesArea').value };
-            try {
-                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': apiKey
-                    },
-                    body: JSON.stringify(payload)
-                });
-            } catch(err) {
-                console.error("Cloud sync push failed", err);
+        try {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                headers: { 'X-Master-Key': apiKey }
+            });
+            if(res.ok) {
+                const json = await res.json();
+                const data = json.record;
+                // Only override local storage if cloud actually contains data
+                if(data && (data.events?.length > 0 || data.timetable?.length > 0 || data.grades?.length > 0)) {
+                    events = data.events || [];
+                    timetable = data.timetable || [];
+                    faculty = data.faculty || [];
+                    grades = data.grades || [];
+                    if(data.notes !== undefined) {
+                        document.getElementById('quickNotesArea').value = data.notes;
+                        localStorage.setItem('uni_notes', data.notes);
+                    }
+                    localStorage.setItem('uni_events', JSON.stringify(events));
+                    localStorage.setItem('uni_timetable', JSON.stringify(timetable));
+                    localStorage.setItem('uni_faculty', JSON.stringify(faculty));
+                    localStorage.setItem('uni_grades', JSON.stringify(grades));
+                }
             }
+        } catch(err) {
+            console.error("Cloud sync pull failed", err);
         }
+    }
 
         async function pullCloudDataOnStartup() {
             const apiKey = localStorage.getItem('uni_sync_key');
