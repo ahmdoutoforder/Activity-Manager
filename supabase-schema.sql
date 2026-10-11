@@ -23,3 +23,133 @@ drop policy if exists "Users can delete their own UniPlanner data" on public.uni
 create policy "Users can delete their own UniPlanner data"
   on public.uniplanner_data for delete to authenticated
   using (auth.uid() = user_id);
+
+-- Optional shared workspaces for small study groups.
+create table if not exists public.uniplanner_workspaces (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(trim(name)) between 1 and 80),
+  created_by uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.uniplanner_workspace_members (
+  workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member' check (role in ('owner','member')),
+  joined_at timestamptz not null default now(),
+  primary key (workspace_id, user_id)
+);
+create table if not exists public.uniplanner_shared_tasks (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(trim(title)) between 1 and 180),
+  description text not null default '',
+  due_date date not null,
+  category text not null default 'Assignment',
+  priority text not null default 'Medium' check (priority in ('High','Medium','Low')),
+  completed boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists uniplanner_shared_tasks_workspace_due
+  on public.uniplanner_shared_tasks(workspace_id, due_date);
+
+-- SECURITY DEFINER helper avoids recursive membership-policy evaluation.
+create or replace function public.uniplanner_is_workspace_member(target_workspace uuid)
+returns boolean language sql stable security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.uniplanner_workspace_members m
+    where m.workspace_id = target_workspace and m.user_id = auth.uid()
+  );
+$$;
+revoke all on function public.uniplanner_is_workspace_member(uuid) from public;
+grant execute on function public.uniplanner_is_workspace_member(uuid) to authenticated;
+
+alter table public.uniplanner_workspaces enable row level security;
+alter table public.uniplanner_workspace_members enable row level security;
+alter table public.uniplanner_shared_tasks enable row level security;
+
+drop policy if exists "Members can read workspaces" on public.uniplanner_workspaces;
+create policy "Members can read workspaces" on public.uniplanner_workspaces
+  for select to authenticated using (public.uniplanner_is_workspace_member(id));
+drop policy if exists "Users can create workspaces" on public.uniplanner_workspaces;
+create policy "Users can create workspaces" on public.uniplanner_workspaces
+  for insert to authenticated with check (created_by = auth.uid());
+drop policy if exists "Owners can rename workspaces" on public.uniplanner_workspaces;
+create policy "Owners can rename workspaces" on public.uniplanner_workspaces
+  for update to authenticated using (
+    exists (select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = id and m.user_id = auth.uid() and m.role = 'owner')
+  ) with check (public.uniplanner_is_workspace_member(id));
+drop policy if exists "Owners can delete workspaces" on public.uniplanner_workspaces;
+create policy "Owners can delete workspaces" on public.uniplanner_workspaces
+  for delete to authenticated using (
+    exists (select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = id and m.user_id = auth.uid() and m.role = 'owner')
+  );
+
+drop policy if exists "Members can read membership" on public.uniplanner_workspace_members;
+create policy "Members can read membership" on public.uniplanner_workspace_members
+  for select to authenticated using (public.uniplanner_is_workspace_member(workspace_id));
+drop policy if exists "Workspace creators can add themselves" on public.uniplanner_workspace_members;
+create policy "Workspace creators can add themselves" on public.uniplanner_workspace_members
+  for insert to authenticated with check (
+    user_id = auth.uid() and role = 'owner' and exists (
+      select 1 from public.uniplanner_workspaces w
+      where w.id = workspace_id and w.created_by = auth.uid()
+    )
+  );
+drop policy if exists "Members can leave or owners can remove members" on public.uniplanner_workspace_members;
+create policy "Members can leave or owners can remove members" on public.uniplanner_workspace_members
+  for delete to authenticated using (
+    user_id = auth.uid() or exists (
+      select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = workspace_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
+
+create or replace function public.uniplanner_invite_member(target_workspace uuid, invite_email text)
+returns void language plpgsql security definer set search_path = public
+as $$
+declare invited_user uuid;
+begin
+  if not exists (
+    select 1 from public.uniplanner_workspace_members m
+    where m.workspace_id = target_workspace and m.user_id = auth.uid() and m.role = 'owner'
+  ) then
+    raise exception 'Only workspace owners can invite members';
+  end if;
+  select u.id into invited_user from auth.users u
+    where lower(u.email) = lower(trim(invite_email)) limit 1;
+  if invited_user is null then
+    raise exception 'No registered account found for that email. Ask them to sign up first.';
+  end if;
+  insert into public.uniplanner_workspace_members(workspace_id, user_id, role)
+    values (target_workspace, invited_user, 'member')
+    on conflict (workspace_id, user_id) do nothing;
+end;
+$$;
+revoke all on function public.uniplanner_invite_member(uuid,text) from public;
+grant execute on function public.uniplanner_invite_member(uuid,text) to authenticated;
+
+drop policy if exists "Members can read shared tasks" on public.uniplanner_shared_tasks;
+create policy "Members can read shared tasks" on public.uniplanner_shared_tasks
+  for select to authenticated using (public.uniplanner_is_workspace_member(workspace_id));
+drop policy if exists "Members can create shared tasks" on public.uniplanner_shared_tasks;
+create policy "Members can create shared tasks" on public.uniplanner_shared_tasks
+  for insert to authenticated with check (
+    created_by = auth.uid() and public.uniplanner_is_workspace_member(workspace_id)
+  );
+drop policy if exists "Members can update shared tasks" on public.uniplanner_shared_tasks;
+create policy "Members can update shared tasks" on public.uniplanner_shared_tasks
+  for update to authenticated using (public.uniplanner_is_workspace_member(workspace_id))
+  with check (public.uniplanner_is_workspace_member(workspace_id));
+drop policy if exists "Creators or owners can delete shared tasks" on public.uniplanner_shared_tasks;
+create policy "Creators or owners can delete shared tasks" on public.uniplanner_shared_tasks
+  for delete to authenticated using (
+    created_by = auth.uid() or exists (
+      select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = workspace_id and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
