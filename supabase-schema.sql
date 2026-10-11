@@ -109,6 +109,27 @@ create policy "Members can leave or owners can remove members" on public.uniplan
     )
   );
 
+create or replace function public.uniplanner_create_workspace(workspace_name text)
+returns uuid language plpgsql security definer set search_path = public
+as $
+declare new_workspace uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'Sign in before creating a workspace';
+  end if;
+  if char_length(trim(workspace_name)) < 1 or char_length(trim(workspace_name)) > 80 then
+    raise exception 'Workspace name must be between 1 and 80 characters';
+  end if;
+  insert into public.uniplanner_workspaces(name, created_by)
+    values (trim(workspace_name), auth.uid()) returning id into new_workspace;
+  insert into public.uniplanner_workspace_members(workspace_id, user_id, role)
+    values (new_workspace, auth.uid(), 'owner');
+  return new_workspace;
+end;
+$;
+revoke all on function public.uniplanner_create_workspace(text) from public;
+grant execute on function public.uniplanner_create_workspace(text) to authenticated;
+
 create or replace function public.uniplanner_invite_member(target_workspace uuid, invite_email text)
 returns void language plpgsql security definer set search_path = public
 as $$
