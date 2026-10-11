@@ -105,7 +105,7 @@ create policy "Members can leave or owners can remove members" on public.uniplan
   for delete to authenticated using (
     user_id = auth.uid() or exists (
       select 1 from public.uniplanner_workspace_members m
-      where m.workspace_id = workspace_id and m.user_id = auth.uid() and m.role = 'owner'
+      where m.workspace_id = uniplanner_workspace_members.workspace_id and m.user_id = auth.uid() and m.role = 'owner'
     )
   );
 
@@ -171,6 +171,6 @@ create policy "Creators or owners can delete shared tasks" on public.uniplanner_
   for delete to authenticated using (
     created_by = auth.uid() or exists (
       select 1 from public.uniplanner_workspace_members m
-      where m.workspace_id = workspace_id and m.user_id = auth.uid() and m.role = 'owner'
+      where m.workspace_id = uniplanner_shared_tasks.workspace_id and m.user_id = auth.uid() and m.role = 'owner'
     )
   );
