@@ -38,6 +38,7 @@
     </style>
 </head>
 <body class="min-h-full bg-slate-950 text-slate-100 font-sans antialiased flex flex-col overflow-y-auto transition-colors duration-200">
+
     <!-- Top Countdown Alert Banner -->
     <div id="urgentBanner" class="bg-gradient-to-r from-rose-900/90 via-amber-900/90 to-rose-900/90 border-b border-rose-500/30 px-4 py-2 text-xs flex items-center justify-between shrink-0 shadow-lg">
         <div class="flex items-center space-x-2 truncate">
@@ -100,10 +101,10 @@
     </header>
 
     <!-- MAIN WORKSPACE VIEWS -->
-    <main class="flex-1 overflow-hidden p-4 lg:p-6 relative">
+    <main class="flex-1 p-4 lg:p-6 relative">
 
         <!-- TAB 1: CALENDAR VIEW -->
-        <div id="tab-calendar" class="tab-content h-full flex flex-col lg:flex-row gap-6">
+        <div id="tab-calendar" class="tab-content flex flex-col lg:flex-row gap-6">
             <section class="flex-1 flex flex-col bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
                 <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center space-x-3">
@@ -135,10 +136,10 @@
                     <span class="text-rose-400">Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="text-rose-400">Sat</span>
                 </div>
 
-                <div id="calendarGrid" class="flex-1 grid grid-cols-7 grid-rows-5 bg-slate-800 gap-[1px] overflow-y-auto"></div>
+                <div id="calendarGrid" class="grid grid-cols-7 grid-rows-5 bg-slate-800 gap-[1px]"></div>
             </section>
 
-            <aside class="w-full lg:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto">
+            <aside class="w-full lg:w-96 flex flex-col gap-6 shrink-0">
                 <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col max-h-[50vh]">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="font-semibold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-clock text-blue-400"></i> Upcoming Deadlines</h3>
@@ -158,7 +159,7 @@
         </div>
 
         <!-- TAB 2: TIMETABLE & FACULTY -->
-        <div id="tab-timetable" class="tab-content h-full hidden flex flex-col lg:flex-row gap-6 overflow-y-auto">
+        <div id="tab-timetable" class="tab-content hidden flex flex-col lg:flex-row gap-6">
             <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -167,7 +168,7 @@
                     </div>
                     <button onclick="openTimetableModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Class</button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1 overflow-y-auto" id="timetableGrid"></div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3" id="timetableGrid"></div>
             </div>
 
             <div class="w-full lg:w-96 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
@@ -178,12 +179,12 @@
                     </div>
                     <button onclick="openFacultyModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Faculty</button>
                 </div>
-                <div id="facultyList" class="space-y-3 flex-1 overflow-y-auto"></div>
+                <div id="facultyList" class="space-y-3"></div>
             </div>
         </div>
 
         <!-- TAB 3: GRADE & GPA TRACKER -->
-        <div id="tab-grades" class="tab-content h-full hidden flex flex-col lg:flex-row gap-6 overflow-y-auto">
+        <div id="tab-grades" class="tab-content hidden flex flex-col lg:flex-row gap-6">
             <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -192,7 +193,7 @@
                     </div>
                     <button onclick="openGradeModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Add Score Entry</button>
                 </div>
-                <div id="courseGradeCards" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto flex-1"></div>
+                <div id="courseGradeCards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
 
             <div class="w-full lg:w-80 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
@@ -212,7 +213,7 @@
         </div>
 
         <!-- TAB 4: POMODORO FOCUS TIMER -->
-        <div id="tab-pomodoro" class="tab-content h-full hidden flex items-center justify-center">
+        <div id="tab-pomodoro" class="tab-content hidden flex items-center justify-center py-12">
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full max-w-md text-center flex flex-col items-center">
                 <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 text-2xl mb-4">
                     <i class="fa-solid fa-stopwatch"></i>
@@ -507,70 +508,89 @@
         let timerRunning = false;
         let completedSessions = 0;
 
-       window.onload = async function() {
-        loadLocalData();
-        await pullCloudDataOnStartup(); // Force pull before rendering
-        renderCalendar();
-        renderUpcomingDeadlines();
-        renderTimetable();
-        renderFaculty();
-        renderGrades();
-        startCountdownBannerTimer();
-        updateMemberFilterOptions();
-    };
+        window.onload = async function() {
+            loadLocalData();
+            await pullCloudDataOnStartup();
+            renderCalendar();
+            renderUpcomingDeadlines();
+            renderTimetable();
+            renderFaculty();
+            renderGrades();
+            startCountdownBannerTimer();
+            updateMemberFilterOptions();
+        };
 
-    async function pullCloudDataOnStartup() {
-        const apiKey = localStorage.getItem('uni_sync_key');
-        const binId = localStorage.getItem('uni_sync_bin');
-        if(!apiKey || !binId) return;
-
-        try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                headers: { 'X-Master-Key': apiKey }
-            });
-            if(res.ok) {
-                const json = await res.json();
-                const data = json.record;
-                // Only override local storage if cloud actually contains data
-                if(data && (data.events?.length > 0 || data.timetable?.length > 0 || data.grades?.length > 0)) {
-                    events = data.events || [];
-                    timetable = data.timetable || [];
-                    faculty = data.faculty || [];
-                    grades = data.grades || [];
-                    if(data.notes !== undefined) {
-                        document.getElementById('quickNotesArea').value = data.notes;
-                        localStorage.setItem('uni_notes', data.notes);
-                    }
-                    localStorage.setItem('uni_events', JSON.stringify(events));
-                    localStorage.setItem('uni_timetable', JSON.stringify(timetable));
-                    localStorage.setItem('uni_faculty', JSON.stringify(faculty));
-                    localStorage.setItem('uni_grades', JSON.stringify(grades));
-                }
-            }
-        } catch(err) {
-            console.error("Cloud sync pull failed", err);
+        function loadLocalData() {
+            events = JSON.parse(localStorage.getItem('uni_events')) || [];
+            timetable = JSON.parse(localStorage.getItem('uni_timetable')) || [];
+            faculty = JSON.parse(localStorage.getItem('uni_faculty')) || [];
+            grades = JSON.parse(localStorage.getItem('uni_grades')) || [];
+            const notes = localStorage.getItem('uni_notes') || '';
+            const notesArea = document.getElementById('quickNotesArea');
+            if (notesArea) notesArea.value = notes;
+            const apiKeyInput = document.getElementById('syncApiKey');
+            if (apiKeyInput) apiKeyInput.value = localStorage.getItem('uni_sync_key') || '';
+            const binIdInput = document.getElementById('syncBinId');
+            if (binIdInput) binIdInput.value = localStorage.getItem('uni_sync_bin') || '';
         }
-    }
+
+        function saveAllData() {
+            localStorage.setItem('uni_events', JSON.stringify(events));
+            localStorage.setItem('uni_timetable', JSON.stringify(timetable));
+            localStorage.setItem('uni_faculty', JSON.stringify(faculty));
+            localStorage.setItem('uni_grades', JSON.stringify(grades));
+            updateMemberFilterOptions();
+            syncToCloud();
+        }
+
+        function saveQuickNotes() {
+            const area = document.getElementById('quickNotesArea');
+            if (area) localStorage.setItem('uni_notes', area.value);
+        }
+
+        async function syncToCloud() {
+            const apiKey = localStorage.getItem('uni_sync_key');
+            const binId = localStorage.getItem('uni_sync_bin');
+            if (!apiKey || !binId) return;
+
+            const notesArea = document.getElementById('quickNotesArea');
+            const notesVal = notesArea ? notesArea.value : (localStorage.getItem('uni_notes') || '');
+
+            const payload = { events, timetable, faculty, grades, notes: notesVal };
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': apiKey
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } catch(err) {
+                console.error("Cloud sync push failed", err);
+            }
+        }
 
         async function pullCloudDataOnStartup() {
             const apiKey = localStorage.getItem('uni_sync_key');
             const binId = localStorage.getItem('uni_sync_bin');
-            if(!apiKey || !binId) return;
+            if (!apiKey || !binId) return;
 
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
                     headers: { 'X-Master-Key': apiKey }
                 });
-                if(res.ok) {
+                if (res.ok) {
                     const json = await res.json();
                     const data = json.record;
-                    if(data) {
-                        if(data.events) events = data.events;
-                        if(data.timetable) timetable = data.timetable;
-                        if(data.faculty) faculty = data.faculty;
-                        if(data.grades) grades = data.grades;
-                        if(data.notes !== undefined) {
-                            document.getElementById('quickNotesArea').value = data.notes;
+                    if (data && (data.events?.length > 0 || data.timetable?.length > 0 || data.grades?.length > 0)) {
+                        events = data.events || [];
+                        timetable = data.timetable || [];
+                        faculty = data.faculty || [];
+                        grades = data.grades || [];
+                        if (data.notes !== undefined) {
+                            const notesArea = document.getElementById('quickNotesArea');
+                            if (notesArea) notesArea.value = data.notes;
                             localStorage.setItem('uni_notes', data.notes);
                         }
                         localStorage.setItem('uni_events', JSON.stringify(events));
@@ -593,15 +613,20 @@
             localStorage.setItem('uni_sync_key', apiKey);
             localStorage.setItem('uni_sync_bin', binId);
             closeCloudSyncModal();
-            showToast('Cloud sync settings saved! Testing sync...');
-            await syncToCloud();
-            showToast('Cloud sync active!');
+            showToast('Cloud sync settings saved! Pulling latest data...');
+            await pullCloudDataOnStartup();
+            renderCalendar();
+            renderUpcomingDeadlines();
+            renderTimetable();
+            renderFaculty();
+            renderGrades();
+            showToast('Cloud sync active & updated!');
         }
 
         async function testAndPullCloudData() {
             const apiKey = document.getElementById('syncApiKey').value.trim();
             const binId = document.getElementById('syncBinId').value.trim();
-            if(!apiKey || !binId) { showToast('Enter API Key and Bin ID first', 'error'); return; }
+            if (!apiKey || !binId) { showToast('Enter API Key and Bin ID first', 'error'); return; }
             localStorage.setItem('uni_sync_key', apiKey);
             localStorage.setItem('uni_sync_bin', binId);
             await pullCloudDataOnStartup();
@@ -625,6 +650,7 @@
 
         function updateMemberFilterOptions() {
             const select = document.getElementById('memberFilterSelect');
+            if (!select) return;
             const currentVal = select.value;
             const members = new Set();
             events.forEach(e => {
@@ -651,14 +677,18 @@
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+            
+            const displayElem = document.getElementById('monthYearDisplay');
+            if (displayElem) displayElem.textContent = `${monthNames[month]} ${year}`;
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
             const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
             grid.innerHTML = '';
 
-            const selectedMember = document.getElementById('memberFilterSelect').value;
+            const filterElem = document.getElementById('memberFilterSelect');
+            const selectedMember = filterElem ? filterElem.value : 'ALL';
             const todayStr = new Date().toISOString().split('T')[0];
 
             let dayCounter = 1;
@@ -708,13 +738,15 @@
 
         function renderUpcomingDeadlines() {
             const list = document.getElementById('upcomingDeadlinesList');
+            if (!list) return;
             list.innerHTML = '';
             const todayStr = new Date().toISOString().split('T')[0];
 
             let active = events.filter(e => e.date >= todayStr).sort((a,b) => new Date(a.date) - new Date(b.date));
-            document.getElementById('deadlineCountBadge').textContent = `${active.length} active`;
+            const badge = document.getElementById('deadlineCountBadge');
+            if (badge) badge.textContent = `${active.length} active`;
 
-            if(active.length === 0) {
+            if (active.length === 0) {
                 list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No upcoming deadlines.</p>`;
                 return;
             }
@@ -743,9 +775,14 @@
                 const todayStr = new Date().toISOString().split('T')[0];
                 const upcoming = events.filter(e => e.date >= todayStr).sort((a,b) => new Date(a.date + 'T' + (a.time || '23:59')) - new Date(b.date + 'T' + (b.time || '23:59')));
 
+                const titleElem = document.getElementById('bannerTitle');
+                const countdownElem = document.getElementById('bannerCountdown');
+
+                if (!titleElem || !countdownElem) return;
+
                 if (upcoming.length === 0) {
-                    document.getElementById('bannerTitle').textContent = "No urgent deadlines pending";
-                    document.getElementById('bannerCountdown').textContent = "--:--:--";
+                    titleElem.textContent = "No urgent deadlines pending";
+                    countdownElem.textContent = "--:--:--";
                     return;
                 }
 
@@ -755,15 +792,15 @@
                 const diff = targetDate - now;
 
                 if (diff <= 0) {
-                    document.getElementById('bannerTitle').textContent = `DUE NOW: ${target.title}`;
-                    document.getElementById('bannerCountdown').textContent = "00:00:00";
+                    titleElem.textContent = `DUE NOW: ${target.title}`;
+                    countdownElem.textContent = "00:00:00";
                     triggerDesktopNotification(`Deadline Reached: ${target.title}`, `This event is due right now!`);
                 } else {
                     const hrs = Math.floor(diff / (1000 * 60 * 60));
                     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                    document.getElementById('bannerTitle').textContent = `${target.title} (${target.date})`;
-                    document.getElementById('bannerCountdown').textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                    titleElem.textContent = `${target.title} (${target.date})`;
+                    countdownElem.textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
                 }
             }, 1000);
         }
@@ -967,6 +1004,7 @@
 
         function renderTeamMembers() {
             const c = document.getElementById('teamMembersList');
+            if (!c) return;
             c.innerHTML = '';
             activeTeamMembers.forEach((m, idx) => {
                 const div = document.createElement('div');
@@ -991,6 +1029,7 @@
 
         function renderSubtasks() {
             const c = document.getElementById('subtasksList');
+            if (!c) return;
             c.innerHTML = '';
             activeSubtasks.forEach((s, idx) => {
                 const div = document.createElement('div');
@@ -1019,6 +1058,7 @@
 
         function renderMessageBoard() {
             const c = document.getElementById('messageBoardList');
+            if (!c) return;
             c.innerHTML = '';
             if(activeMessages.length === 0) {
                 c.innerHTML = `<p class="text-[10px] text-slate-500 italic">No updates posted yet.</p>`;
@@ -1061,7 +1101,7 @@
 
             if(editingEventId) {
                 const idx = events.findIndex(e => e.id === editingEventId);
-                events[idx] = evtData;
+                if (idx !== -1) events[idx] = evtData;
             } else {
                 events.push(evtData);
             }
@@ -1102,6 +1142,7 @@
         }
         function renderTimetable() {
             const grid = document.getElementById('timetableGrid');
+            if (!grid) return;
             if(timetable.length === 0) {
                 grid.innerHTML = `<p class="text-xs text-slate-500 col-span-5 text-center py-6">No classes added yet. Click "+ Add Class".</p>`;
                 return;
@@ -1143,6 +1184,7 @@
         }
         function renderFaculty() {
             const list = document.getElementById('facultyList');
+            if (!list) return;
             if(faculty.length === 0) {
                 list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Faculty directory clear.</p>`;
                 return;
@@ -1181,9 +1223,11 @@
         }
         function renderGrades() {
             const container = document.getElementById('courseGradeCards');
+            if (!container) return;
             if(grades.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-6">No grades logged yet. Click "+ Add Score Entry".</p>`;
-                document.getElementById('estimatedGpaDisplay').textContent = "3.85";
+                const gpaElem = document.getElementById('estimatedGpaDisplay');
+                if (gpaElem) gpaElem.textContent = "3.85";
                 return;
             }
             container.innerHTML = '';
@@ -1213,7 +1257,7 @@
                 const card = document.createElement('div');
                 card.className = "bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between";
                 
-                let entriesHtml = entries.map((e, idx) => `
+                let entriesHtml = entries.map((e) => `
                     <div class="flex items-center justify-between text-[11px] text-slate-300 py-1 border-b border-slate-800/60">
                         <span>${e.title || 'Assessment'} (${e.weight}%)</span>
                         <div class="flex items-center gap-2">
@@ -1239,13 +1283,16 @@
                 const avgPct = (totalWeightedSum / (totalWeightSum / 100));
                 let estGpa = (avgPct / 100) * 4.0;
                 if(estGpa > 4.0) estGpa = 4.0;
-                document.getElementById('estimatedGpaDisplay').textContent = estGpa.toFixed(2);
+                const gpaElem = document.getElementById('estimatedGpaDisplay');
+                if (gpaElem) gpaElem.textContent = estGpa.toFixed(2);
             }
         }
 
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = msg;
+            if (!t) return;
+            const msgElem = document.getElementById('toastMessage');
+            if (msgElem) msgElem.textContent = msg;
             t.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
