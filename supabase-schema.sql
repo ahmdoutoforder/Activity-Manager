@@ -181,3 +181,102 @@ alter table public.uniplanner_shared_tasks
   add column if not exists assigned_to uuid references auth.users(id) on delete set null;
 create index if not exists uniplanner_shared_tasks_assignee
   on public.uniplanner_shared_tasks(assigned_to);
+
+
+-- Shared study notes, task discussions, and workspace chat.
+-- Additive migration: existing personal data and shared tasks are untouched.
+create table if not exists public.uniplanner_workspace_notes (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
+  created_by uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(trim(title)) between 1 and 120),
+  body text not null check (char_length(trim(body)) between 1 and 10000),
+  created_at timestamptz not null default now()
+);
+create index if not exists uniplanner_workspace_notes_recent
+  on public.uniplanner_workspace_notes(workspace_id, created_at desc);
+
+create table if not exists public.uniplanner_task_comments (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
+  task_id uuid not null references public.uniplanner_shared_tasks(id) on delete cascade,
+  created_by uuid not null references auth.users(id) on delete cascade,
+  body text not null check (char_length(trim(body)) between 1 and 3000),
+  created_at timestamptz not null default now()
+);
+create index if not exists uniplanner_task_comments_task_recent
+  on public.uniplanner_task_comments(workspace_id, task_id, created_at);
+
+create table if not exists public.uniplanner_group_messages (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
+  created_by uuid not null references auth.users(id) on delete cascade,
+  body text not null check (char_length(trim(body)) between 1 and 3000),
+  created_at timestamptz not null default now()
+);
+create index if not exists uniplanner_group_messages_recent
+  on public.uniplanner_group_messages(workspace_id, created_at);
+
+alter table public.uniplanner_workspace_notes enable row level security;
+alter table public.uniplanner_task_comments enable row level security;
+alter table public.uniplanner_group_messages enable row level security;
+
+drop policy if exists "Members can read shared notes" on public.uniplanner_workspace_notes;
+create policy "Members can read shared notes" on public.uniplanner_workspace_notes
+  for select to authenticated using (public.uniplanner_is_workspace_member(workspace_id));
+drop policy if exists "Members can add shared notes" on public.uniplanner_workspace_notes;
+create policy "Members can add shared notes" on public.uniplanner_workspace_notes
+  for insert to authenticated with check (
+    created_by = auth.uid() and public.uniplanner_is_workspace_member(workspace_id)
+  );
+drop policy if exists "Authors or owners can delete shared notes" on public.uniplanner_workspace_notes;
+create policy "Authors or owners can delete shared notes" on public.uniplanner_workspace_notes
+  for delete to authenticated using (
+    created_by = auth.uid() or exists (
+      select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = uniplanner_workspace_notes.workspace_id
+        and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
+
+drop policy if exists "Members can read task comments" on public.uniplanner_task_comments;
+create policy "Members can read task comments" on public.uniplanner_task_comments
+  for select to authenticated using (
+    public.uniplanner_is_workspace_member(workspace_id)
+    and exists (select 1 from public.uniplanner_shared_tasks t
+      where t.id = task_id and t.workspace_id = uniplanner_task_comments.workspace_id)
+  );
+drop policy if exists "Members can add task comments" on public.uniplanner_task_comments;
+create policy "Members can add task comments" on public.uniplanner_task_comments
+  for insert to authenticated with check (
+    created_by = auth.uid() and public.uniplanner_is_workspace_member(workspace_id)
+    and exists (select 1 from public.uniplanner_shared_tasks t
+      where t.id = task_id and t.workspace_id = uniplanner_task_comments.workspace_id)
+  );
+drop policy if exists "Authors or owners can delete task comments" on public.uniplanner_task_comments;
+create policy "Authors or owners can delete task comments" on public.uniplanner_task_comments
+  for delete to authenticated using (
+    created_by = auth.uid() or exists (
+      select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = uniplanner_task_comments.workspace_id
+        and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
+
+drop policy if exists "Members can read group messages" on public.uniplanner_group_messages;
+create policy "Members can read group messages" on public.uniplanner_group_messages
+  for select to authenticated using (public.uniplanner_is_workspace_member(workspace_id));
+drop policy if exists "Members can send group messages" on public.uniplanner_group_messages;
+create policy "Members can send group messages" on public.uniplanner_group_messages
+  for insert to authenticated with check (
+    created_by = auth.uid() and public.uniplanner_is_workspace_member(workspace_id)
+  );
+drop policy if exists "Authors or owners can delete group messages" on public.uniplanner_group_messages;
+create policy "Authors or owners can delete group messages" on public.uniplanner_group_messages
+  for delete to authenticated using (
+    created_by = auth.uid() or exists (
+      select 1 from public.uniplanner_workspace_members m
+      where m.workspace_id = uniplanner_group_messages.workspace_id
+        and m.user_id = auth.uid() and m.role = 'owner'
+    )
+  );
