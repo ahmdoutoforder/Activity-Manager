@@ -280,3 +280,40 @@ create policy "Authors or owners can delete group messages" on public.uniplanner
         and m.user_id = auth.uid() and m.role = 'owner'
     )
   );
+
+
+-- Workspace member display names.
+-- Additive migration: does not modify personal planner data or existing collaboration records.
+create table if not exists public.uniplanner_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null check (char_length(trim(display_name)) between 1 and 40),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.uniplanner_profiles enable row level security;
+
+drop policy if exists "Users can read their own profile and workspace peers" on public.uniplanner_profiles;
+create policy "Users can read their own profile and workspace peers"
+  on public.uniplanner_profiles for select to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (
+      select 1
+      from public.uniplanner_workspace_members mine
+      join public.uniplanner_workspace_members peer
+        on peer.workspace_id = mine.workspace_id
+      where mine.user_id = auth.uid()
+        and peer.user_id = uniplanner_profiles.user_id
+    )
+  );
+
+drop policy if exists "Users can create their own profile" on public.uniplanner_profiles;
+create policy "Users can create their own profile"
+  on public.uniplanner_profiles for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can update their own profile" on public.uniplanner_profiles;
+create policy "Users can update their own profile"
+  on public.uniplanner_profiles for update to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
