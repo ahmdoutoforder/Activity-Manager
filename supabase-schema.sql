@@ -174,3 +174,10 @@ create policy "Creators or owners can delete shared tasks" on public.uniplanner_
       where m.workspace_id = uniplanner_shared_tasks.workspace_id and m.user_id = auth.uid() and m.role = 'owner'
     )
   );
+
+
+-- Safe upgrade for group task assignment (existing tasks remain unassigned).
+alter table public.uniplanner_shared_tasks
+  add column if not exists assigned_to uuid references auth.users(id) on delete set null;
+create index if not exists uniplanner_shared_tasks_assignee
+  on public.uniplanner_shared_tasks(assigned_to);
