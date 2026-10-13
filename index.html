@@ -137,7 +137,7 @@ body{background:radial-gradient(ellipse at 12% 0%,#243d6a55,transparent 36%),rad
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 
 /* Dashboard composition v1 — redesigns the dashboard structure while retaining existing data hooks. */
-.dashboard-page{display:flex;flex-direction:column;gap:0}
+.dashboard-page{display:flex;flex-direction:column;gap:0}.dashboard-page:not(.active){display:none}
 .dashboard-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(250px,.88fr);align-items:center;min-height:300px;overflow:hidden;padding:35px 38px 58px;border:1px solid #33486a;border-radius:26px;background:linear-gradient(115deg,#17263c 0%,#142238 46%,#111a2b 100%);box-shadow:0 24px 65px #0003;margin-bottom:27px}
 .dashboard-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 76% 45%,#7696ff20,transparent 40%),linear-gradient(90deg,#111b2a00 55%,#0b132340);pointer-events:none}
 .dashboard-hero:after{content:"";position:absolute;z-index:-1;width:420px;height:420px;border:1px solid #a8bcff0c;border-radius:50%;right:4%;top:-65%;box-shadow:0 0 0 35px #a8bcff06,0 0 0 70px #a8bcff04,0 0 0 105px #a8bcff03;pointer-events:none}
