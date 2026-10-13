@@ -135,6 +135,71 @@ body{background:radial-gradient(ellipse at 12% 0%,#243d6a55,transparent 36%),rad
 }
 @media(prefers-reduced-motion:reduce){.page.active{animation:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+
+/* Dashboard composition v1 — redesigns the dashboard structure while retaining existing data hooks. */
+.dashboard-page{display:flex;flex-direction:column;gap:0}
+.dashboard-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(250px,.88fr);align-items:center;min-height:300px;overflow:hidden;padding:35px 38px 58px;border:1px solid #33486a;border-radius:26px;background:linear-gradient(115deg,#17263c 0%,#142238 46%,#111a2b 100%);box-shadow:0 24px 65px #0003;margin-bottom:27px}
+.dashboard-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 76% 45%,#7696ff20,transparent 40%),linear-gradient(90deg,#111b2a00 55%,#0b132340);pointer-events:none}
+.dashboard-hero:after{content:"";position:absolute;z-index:-1;width:420px;height:420px;border:1px solid #a8bcff0c;border-radius:50%;right:4%;top:-65%;box-shadow:0 0 0 35px #a8bcff06,0 0 0 70px #a8bcff04,0 0 0 105px #a8bcff03;pointer-events:none}
+.hero-copy{position:relative;z-index:2;max-width:560px}
+.dashboard-hero .eyebrow{display:flex;align-items:center;gap:9px;color:#9cb5ef;font-size:10px;font-weight:800;letter-spacing:2px}
+.dashboard-hero .eyebrow:before{content:"";width:22px;height:2px;background:#8eabff;border-radius:3px}
+.dashboard-hero h2{font-size:clamp(35px,4vw,53px);line-height:1.04;letter-spacing:-2.4px;font-weight:800;margin:20px 0 13px;max-width:500px}
+.hero-period{color:#90adff}
+.dashboard-hero p{max-width:390px;color:#aab9d0;font-size:14px;line-height:1.75;margin:0}
+.hero-actions{display:flex;align-items:center;gap:10px;margin-top:25px;flex-wrap:wrap}
+.dashboard-hero .hero-actions .btn{padding:12px 16px}
+.dashboard-hero .hero-actions .btn.primary{background:#91adff;color:#0b1425;border-color:#91adff;box-shadow:0 8px 25px #7696ff30}
+.dashboard-hero .hero-secondary{background:#ffffff08;border-color:#ffffff1b;color:#dce6f8}
+.hero-art{height:220px;position:relative;display:flex;align-items:center;justify-content:center;min-width:0}
+.orbit{position:absolute;border:1px solid #a8bcff24;border-radius:50%;transform:rotate(-25deg)}
+.orbit-one{width:260px;height:160px}
+.orbit-two{width:210px;height:260px;transform:rotate(35deg);border-color:#a8bcff16}
+.hero-tile{position:absolute;width:175px;height:185px;border:1px solid #90aaff32;border-radius:20px;background:linear-gradient(150deg,#253c5b,#17263d);box-shadow:0 25px 55px #0003}
+.tile-back{transform:rotate(12deg) translate(16px,-1px);background:linear-gradient(150deg,#304b70,#1b2a42)}
+.tile-front{display:flex;flex-direction:column;align-items:flex-start;padding:20px;transform:rotate(-5deg);background:linear-gradient(145deg,#1c304d,#111d30)}
+.tile-check{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:#8eabff;color:#0c1729;font-size:18px;font-weight:900;margin-bottom:18px;box-shadow:0 5px 18px #8eabff30}
+.tile-kicker{font-size:8px;font-weight:800;letter-spacing:1.6px;color:#9db3d7}
+.tile-title{font-size:21px;line-height:1.1;letter-spacing:-.5px;font-weight:800;margin-top:8px;color:#f0f4ff}
+.tile-lines{display:flex;gap:5px;margin-top:auto;width:100%}
+.tile-lines i{height:4px;flex:1;border-radius:5px;background:#6f8ee9}
+.tile-lines i:nth-child(2){flex:1.4;background:#425a7e}.tile-lines i:nth-child(3){background:#2e405c}
+.hero-spark{position:absolute;color:#91adff;font-size:23px}
+.spark-one{right:8%;top:22%}.spark-two{left:12%;bottom:17%;font-size:16px;color:#d0dcff}
+.hero-bottomline{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;gap:12px;padding:13px 25px;border-top:1px solid #ffffff12;background:#0b142626;color:#8094b3;font-size:9px;font-weight:800;letter-spacing:1.5px}
+.hero-bottomline b{color:#8eabff;padding:0 4px}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#70d9b8;box-shadow:0 0 0 4px #70d9b818;margin-right:8px}
+.dashboard-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:2px 2px 13px}
+.dashboard-section-head h3{font-size:19px;letter-spacing:-.55px;margin:5px 0 0;font-weight:800}
+.section-kicker{font-size:9px;font-weight:800;letter-spacing:1.8px;color:#8ea6d0}
+.section-note{font-size:11px;color:#8294af}
+.dashboard-page .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dashboard-page .stat{min-width:0;padding:18px 17px 16px;border-radius:16px;background:linear-gradient(145deg,#151f31,#101827);border:1px solid #2a3950;box-shadow:inset 0 1px #ffffff05}
+.dashboard-page .stat:nth-child(1){border-top:2px solid #7697ff}
+.dashboard-page .stat:nth-child(2){border-top:2px solid #65d6b4}
+.dashboard-page .stat:nth-child(3){border-top:2px solid #f17e91}
+.dashboard-page .stat:nth-child(4){border-top:2px solid #b695ff}
+.dashboard-page .stat-head{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.dashboard-page .stat-num{font-size:34px;line-height:1.3;letter-spacing:-1.5px;margin-top:7px}
+.dashboard-page .stat-foot{font-size:10px;color:#8192ac;line-height:1.5;margin-top:4px}
+.momentum-heading{margin-top:26px}
+.dashboard-page .insight-grid{gap:12px;margin-bottom:24px}
+.dashboard-page .insight{padding:17px 18px;border:1px solid #293950;border-radius:15px;background:#111b2b}
+.dashboard-page .insight .kicker{font-size:9px;letter-spacing:1.6px;color:#8499bb;font-weight:800}
+.dashboard-page .insight .value{font-size:25px;font-weight:800;letter-spacing:-.8px;margin-top:10px}
+.dashboard-page .insight .detail{font-size:11px;color:#91a2bd;margin-top:4px}
+.dashboard-page .insight-bar{height:5px;border-radius:8px;background:#26354b;overflow:hidden;margin-top:14px}
+.dashboard-page .insight-bar span{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#7295ff,#70d9b8)}
+.dashboard-page>.columns{gap:15px}
+.dashboard-page>.columns>.panel,.dashboard-page>.columns>div>.panel{border-radius:17px;padding:18px}
+.dashboard-page .panel-head h3{font-size:14px}
+.dashboard-page .quick button{display:flex;align-items:center;gap:10px;text-align:left;padding:13px;border-radius:12px}
+.dashboard-page .quick button strong{font-size:11px}
+.dashboard-page .quick button span{font-size:10px;color:#8597b3}
+.dashboard-page .task{border-radius:12px}
+@media(max-width:1000px){.dashboard-hero{padding:30px 27px 55px;grid-template-columns:minmax(0,1fr) minmax(210px,.7fr)}.hero-tile{transform:scale(.9) rotate(-5deg)}.tile-back{transform:scale(.9) rotate(12deg) translate(16px,-1px)}.dashboard-page .stat{padding:15px 13px}.dashboard-page .stat-num{font-size:29px}}
+@media(max-width:700px){.dashboard-hero{display:block;min-height:0;padding:25px 21px 56px;border-radius:20px;margin-bottom:22px}.dashboard-hero h2{font-size:36px;letter-spacing:-1.8px;margin-top:16px}.dashboard-hero p{font-size:13px}.hero-art{position:absolute;width:130px;height:130px;right:-4px;top:7px;opacity:.42;transform:scale(.72);transform-origin:top right}.hero-tile{width:140px;height:150px}.tile-front{padding:15px}.tile-title{font-size:17px}.tile-check{margin-bottom:12px}.hero-bottomline{padding:12px 15px;font-size:7px;letter-spacing:1px}.hero-bottomline span:last-child{display:none}.hero-actions{margin-top:20px}.dashboard-hero .hero-actions .btn{font-size:11px;padding:11px 12px}.dashboard-section-head h3{font-size:17px}.section-note{font-size:10px}.dashboard-page .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dashboard-page .stat{padding:14px 13px;border-radius:13px}.dashboard-page .stat-num{font-size:29px}.dashboard-page .stat-foot{font-size:9px}.dashboard-page .insight-grid{grid-template-columns:1fr;gap:9px}.dashboard-page .insight{padding:14px}.dashboard-page .insight .value{font-size:23px}.momentum-heading{margin-top:22px}.dashboard-page>.columns>.panel,.dashboard-page>.columns>div>.panel{padding:14px}}
+
 </style>
 </head>
 <body class="access-locked">
@@ -161,10 +226,11 @@ body{background:radial-gradient(ellipse at 12% 0%,#243d6a55,transparent 36%),rad
 <div class="sidebar-note"><b>Built for your real semester.</b>Your work saves automatically on this device. Export a backup regularly; cloud sync can be connected in Settings.</div>
 </aside>
 <main class="main">
-<section class="page active" id="page-dashboard">
-<div class="welcome"><div><div class="eyebrow" id="todayLabel">YOUR WORKSPACE</div><h2>Make today count.</h2><p id="welcomeLine">A clearer view of everything on your plate.</p></div><button class="btn primary" id="addDash">＋ Create a task</button></div>
+<section class="page active dashboard-page" id="page-dashboard">
+<div class="dashboard-hero"><div class="hero-copy"><div class="eyebrow" id="todayLabel">YOUR WORKSPACE</div><h2>Make today count<span class="hero-period">.</span></h2><p id="welcomeLine">A clearer view of everything on your plate.</p><div class="hero-actions"><button class="btn primary" id="addDash">＋ Create a task</button><button class="btn hero-secondary" data-goto="calendar">View calendar <span aria-hidden="true">↗</span></button></div></div><div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-tile tile-back"></div><div class="hero-tile tile-front"><span class="tile-check">✓</span><span class="tile-kicker">YOUR NEXT STEP</span><span class="tile-title">One thing<br>at a time.</span><span class="tile-lines"><i></i><i></i><i></i></span></div><div class="hero-spark spark-one">✳</div><div class="hero-spark spark-two">✦</div></div><div class="hero-bottomline"><span><i class="live-dot"></i> YOUR SEMESTER, IN CONTROL</span><span>PLAN <b>·</b> FOCUS <b>·</b> PROGRESS</span></div></div>
+<div class="dashboard-section-head"><div><span class="section-kicker">AT A GLANCE</span><h3>Your progress</h3></div><span class="section-note">Small steps add up.</span></div>
 <div class="stats"><div class="stat"><div class="stat-head">Open tasks <span>☷</span></div><div class="stat-num" id="statOpen">0</div><div class="stat-foot">Ready for your attention</div></div><div class="stat"><div class="stat-head">Due today <span>◷</span></div><div class="stat-num" id="statToday">0</div><div class="stat-foot">Keep an eye on these</div></div><div class="stat"><div class="stat-head">Overdue <span style="color:var(--red)">!</span></div><div class="stat-num" id="statLate">0</div><div class="stat-foot">No repeated alert spam</div></div><div class="stat"><div class="stat-head">Completed <span style="color:var(--mint)">✓</span></div><div class="stat-num" id="statDone">0</div><div class="stat-foot" id="statDoneFoot">Progress adds up</div></div></div>
-<div class="insight-grid"><div class="insight"><div class="kicker">THIS WEEK</div><div class="value" id="weekDone">0 / 0</div><div class="detail" id="weekDetail">Completed tasks this week</div><div class="insight-bar"><span id="weekBar"></span></div></div><div class="insight"><div class="kicker">NEXT 7 DAYS</div><div class="value" id="nextDeadlines">0</div><div class="detail" id="deadlineDetail">Upcoming deadlines</div></div><div class="insight"><div class="kicker">SEMESTER MOMENTUM</div><div class="value" id="momentumValue">Ready</div><div class="detail" id="momentumDetail">Small steps add up</div></div></div><div class="columns"><div class="panel"><div class="panel-head"><div><h3>Upcoming tasks</h3><div class="sub">Your next steps, all in one place</div></div><button class="btn" data-goto="tasks">View all →</button></div><div class="task-list" id="dashTasks"></div></div><div style="display:flex;flex-direction:column;gap:15px"><div class="panel"><div class="panel-head"><div><h3>Month at a glance</h3><div class="sub" id="dashMonthLabel">Your calendar</div></div><button class="btn" data-goto="calendar">Open →</button></div><div id="miniCalendar"></div></div><div class="panel"><div class="panel-head"><div><h3>Quick launch</h3><div class="sub">Jump back into your workflow</div></div></div><div class="quick"><button data-goto="focus"><strong>◉ Focus session</strong><span>Protect study time</span></button><button data-goto="notes"><strong>✎ Capture a note</strong><span>Get it out of your head</span></button><button data-goto="grades"><strong>▤ Check GPA</strong><span>Track your progress</span></button><button data-goto="settings"><strong>☁ Backup & sync</strong><span>Keep data safe</span></button></div></div></div></div>
+<div class="dashboard-section-head momentum-heading"><div><span class="section-kicker">KEEP YOUR MOMENTUM</span><h3>The week ahead</h3></div><span class="section-note">A little progress, every day.</span></div><div class="insight-grid"><div class="insight"><div class="kicker">THIS WEEK</div><div class="value" id="weekDone">0 / 0</div><div class="detail" id="weekDetail">Completed tasks this week</div><div class="insight-bar"><span id="weekBar"></span></div></div><div class="insight"><div class="kicker">NEXT 7 DAYS</div><div class="value" id="nextDeadlines">0</div><div class="detail" id="deadlineDetail">Upcoming deadlines</div></div><div class="insight"><div class="kicker">SEMESTER MOMENTUM</div><div class="value" id="momentumValue">Ready</div><div class="detail" id="momentumDetail">Small steps add up</div></div></div><div class="columns"><div class="panel"><div class="panel-head"><div><h3>Upcoming tasks</h3><div class="sub">Your next steps, all in one place</div></div><button class="btn" data-goto="tasks">View all →</button></div><div class="task-list" id="dashTasks"></div></div><div style="display:flex;flex-direction:column;gap:15px"><div class="panel"><div class="panel-head"><div><h3>Month at a glance</h3><div class="sub" id="dashMonthLabel">Your calendar</div></div><button class="btn" data-goto="calendar">Open →</button></div><div id="miniCalendar"></div></div><div class="panel"><div class="panel-head"><div><h3>Quick launch</h3><div class="sub">Jump back into your workflow</div></div></div><div class="quick"><button data-goto="focus"><strong>◉ Focus session</strong><span>Protect study time</span></button><button data-goto="notes"><strong>✎ Capture a note</strong><span>Get it out of your head</span></button><button data-goto="grades"><strong>▤ Check GPA</strong><span>Track your progress</span></button><button data-goto="settings"><strong>☁ Backup & sync</strong><span>Keep data safe</span></button></div></div></div></div>
 </section>
 <section class="page" id="page-calendar"><div class="welcome"><div><div class="eyebrow">PLAN AHEAD</div><h2>Your calendar.</h2><p>Choose a day to see its tasks or create a new one.</p></div><button class="btn primary" id="addCalendar">＋ Add task</button></div><div class="panel"><div class="panel-head"><div><h3 id="monthHeading">Calendar</h3><div class="sub">Deadlines are shown on their due dates.</div></div><div class="calendar-controls"><button class="iconbtn" id="prevMonth" aria-label="Previous month">←</button><button class="btn" id="todayBtn">Today</button><button class="iconbtn" id="nextMonth" aria-label="Next month">→</button></div></div><div id="fullCalendar"></div></div><div class="panel" style="margin-top:15px"><div class="panel-head"><div><h3 id="selectedDateTitle">Selected day</h3><div class="sub">Tasks for this date</div></div><button class="btn" id="addSelectedDate">＋ Add for this day</button></div><div id="selectedDayTasks" class="task-list"></div></div></section>
 <section class="page" id="page-tasks"><div class="welcome"><div><div class="eyebrow">STAY ON TOP OF IT</div><h2>Tasks & deadlines.</h2><p>One source of truth for your academic commitments.</p></div><button class="btn primary" id="addTasks">＋ Add task</button></div><div class="panel"><div class="row" style="margin-bottom:15px"><input class="search" id="taskSearch" placeholder="Search tasks…" style="flex:1;min-width:140px"><select id="taskFilter" class="search" style="width:auto;min-width:130px"><option value="all">All tasks</option><option value="open">Open</option><option value="today">Due today</option><option value="overdue">Overdue</option><option value="done">Completed</option></select><select id="categoryFilter" class="search" style="width:auto;min-width:130px"><option value="all">All categories</option><option>Quiz</option><option>Assignment</option><option>Group</option><option>Presentation</option><option>Exam</option><option>Other</option></select></div><div id="allTasks" class="task-list"></div></div></section>
