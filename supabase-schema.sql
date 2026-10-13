@@ -111,7 +111,7 @@ create policy "Members can leave or owners can remove members" on public.uniplan
 
 create or replace function public.uniplanner_create_workspace(workspace_name text)
 returns uuid language plpgsql security definer set search_path = public
-as $
+as $$
 declare new_workspace uuid;
 begin
   if auth.uid() is null then
