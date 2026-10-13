@@ -63,6 +63,77 @@ body{background:radial-gradient(ellipse at 8% -18%,#344a8066,transparent 42%),ra
  #page-collaborate .panel{padding:14px}
  .welcome h2{letter-spacing:-.7px}
 }
+/* Visible redesign pass: stronger hierarchy, intentional surfaces, and richer dashboard composition. */
+:root{--bg:#080d17;--panel:#111a2a;--card:#121e31;--line:#27364d;--text:#edf3ff;--muted:#91a1ba;--blue:#89a8ff;--red:#ff7f91;--green:#69d6b0;--yellow:#f4ca75}
+body{background:radial-gradient(ellipse at 12% 0%,#243d6a55,transparent 36%),radial-gradient(ellipse at 90% 8%,#243f4a33,transparent 30%),#080d17;color:var(--text)}
+.app{max-width:1480px}
+.top{padding:15px 18px;border:1px solid #26364f;border-radius:22px;background:linear-gradient(115deg,#121e31f5,#0d1523f2);box-shadow:0 16px 42px #0003;margin-bottom:22px}
+.brand h1{font-size:24px;letter-spacing:-.9px;font-weight:800}
+.brand p{color:#a5b4cb}
+.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#9ab5ff,#516bdd);box-shadow:0 7px 26px #5876f055}
+.top-actions .status{border:1px solid #30435f;border-radius:999px;padding:8px 12px;background:#0b1422}
+.layout{gap:22px}
+.sidebar{border:1px solid #26364d;border-radius:22px;padding:12px;background:linear-gradient(165deg,#121d2e,#0b1320);box-shadow:0 20px 48px #0003}
+.nav{border-radius:12px;padding:12px 13px;margin:3px 0;color:#aab8ce;font-weight:600;transition:all .18s ease}
+.nav:hover{background:#ffffff0b;color:#f4f7ff;transform:translateX(2px)}
+.nav.active{color:#f5f7ff;background:linear-gradient(105deg,#2b4165,#1a2b45);box-shadow:inset 3px 0 #91adff,0 5px 18px #0002}
+.navlabel{font-size:10px;letter-spacing:1.8px;color:#7386a3;padding:18px 12px 7px}
+.page{min-width:0}
+.welcome{padding:25px 27px;border:1px solid #354d74;border-radius:23px;background:radial-gradient(ellipse at 100% 0%,#688cf12b,transparent 43%),linear-gradient(120deg,#182943,#111a2b 72%);box-shadow:0 18px 45px #0002;position:relative;overflow:hidden}
+.welcome:after{content:"";position:absolute;width:180px;height:180px;right:-65px;bottom:-105px;border:1px solid #91adff20;border-radius:50%;box-shadow:0 0 0 22px #91adff08,0 0 0 44px #91adff05;pointer-events:none}
+.welcome h2{font-size:clamp(25px,3vw,36px);letter-spacing:-1.25px;font-weight:800;line-height:1.13}
+.welcome p{color:#a7b7d0;max-width:58ch;line-height:1.65}
+.stats{gap:13px}
+.stat{padding:19px;border:1px solid #293951;border-radius:18px;background:linear-gradient(145deg,#142136,#0f1827);box-shadow:0 12px 30px #0002;position:relative;overflow:hidden}
+.stat:after{content:"";position:absolute;right:-22px;top:-30px;width:95px;height:95px;border-radius:50%;background:#7c9bff0c;pointer-events:none}
+.stat-head{color:#a7b6cd;font-size:12px;font-weight:700;letter-spacing:.35px}
+.stat-num{font-size:clamp(26px,3vw,34px);letter-spacing:-1.3px;font-weight:800;line-height:1.35}
+.panel{border:1px solid #26364d;border-radius:19px;background:linear-gradient(145deg,#121d2e,#0d1523);padding:20px;box-shadow:0 12px 32px #0002}
+.panel h3{font-size:15px;font-weight:750;letter-spacing:-.25px}
+.card,.note,.task,.insight{border-color:#27364c;border-radius:13px;background:#111c2c}
+.task{padding:12px;gap:12px}
+.task-title{font-weight:650;line-height:1.45}
+.task-meta{color:#91a2bc;gap:7px}
+.tag{border:1px solid #30425d;border-radius:7px;background:#17253a;color:#b7c8e4;padding:4px 7px;font-size:10px;font-weight:700}
+.tag.high{background:#38202d;border-color:#633548;color:#ff9dad}
+.tag.medium{background:#342d20;border-color:#5a4b2d;color:#f3d38a}
+.tag.low{background:#18342f;border-color:#28594d;color:#85e0c2}
+.btn{border-radius:11px;font-weight:700;letter-spacing:.05px}
+.btn.primary{background:linear-gradient(135deg,#8eabff,#6482ed);border-color:#91adff;color:#081225;box-shadow:0 7px 22px #6f8fff30}
+.btn.primary:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn:not(.primary){background:#152238;border-color:#30415b;color:#dce7fa}
+.iconbtn,.mini{border-radius:9px}
+.field label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#a6b7d1;font-weight:750}
+.field input,.field select,.field textarea,.search{border:1px solid #2b3b53;border-radius:11px;background:#0a1321;color:#edf3ff;padding:12px 13px}
+.field input::placeholder,.field textarea::placeholder,.search::placeholder{color:#687d9b}
+.field input:focus,.field select:focus,.field textarea:focus,.search:focus{outline:none;border-color:#86a5ff;box-shadow:0 0 0 3px #7295ff24}
+.divider,hr{border-color:#27364b;opacity:.85}
+.empty{border:1px dashed #344762;border-radius:13px;padding:20px;color:#9eafc8;background:#0d1726}
+.quick{gap:10px}
+.quick button{border:1px solid #2a3c55;border-radius:12px;background:#121f32;color:#dbe7fb;padding:12px}
+.month{border:1px solid #2a3a52;border-radius:12px;background:#111c2c}
+.day{border-radius:9px;border-color:#26364d;background:#101a29}
+.day.today{border-color:#89a8ff;background:#1b2d49;box-shadow:inset 0 0 0 1px #89a8ff40}
+.toast{border:1px solid #344763;border-radius:13px;box-shadow:0 18px 45px #0006;backdrop-filter:blur(14px)}
+.modal{border:1px solid #344762;border-radius:22px;box-shadow:0 28px 90px #0008}
+#page-collaborate .columns{gap:18px}
+#page-collaborate #workspaceList .task{padding:14px;border-radius:14px}
+#page-collaborate #workspaceContent>.group-summary .stat{padding:15px}
+#page-collaborate #workspaceContent>.panel{margin-top:15px!important}
+@media(max-width:700px){
+ .app{padding:12px}
+ .top{padding:13px;border-radius:17px;gap:12px}
+ .brand h1{font-size:21px}
+ .welcome{padding:21px 18px;border-radius:18px}
+ .welcome h2{font-size:27px}
+ .stats{gap:9px}
+ .stat{padding:14px;border-radius:14px}
+ .stat-num{font-size:27px}
+ .panel{padding:15px;border-radius:16px}
+ .sidebar{padding:8px;border-radius:15px}
+ .nav.active{box-shadow:inset 0 -2px #91adff}
+}
+@media(prefers-reduced-motion:reduce){.page.active{animation:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 </head>
