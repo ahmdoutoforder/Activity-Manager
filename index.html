@@ -336,6 +336,52 @@ a{ text-decoration-color:#a78bfa66 }
 }
 @media(prefers-reduced-motion:reduce){.page .task,.page .btn{transition:none}}
 
+
+/* Overview command-center pass: make priority and planning areas easier to scan */
+#page-dashboard{max-width:1480px}
+#page-dashboard .dashboard-hero{position:relative;overflow:hidden;border:1px solid #3a2d50;background:radial-gradient(ellipse at 82% 15%,#8b5cf62a,transparent 40%),linear-gradient(120deg,#171321,#100f17 68%);box-shadow:0 22px 55px #0003}
+#page-dashboard .hero-copy h2{max-width:620px;font-size:clamp(30px,4vw,46px);letter-spacing:-.055em;line-height:1.04}
+#page-dashboard .hero-copy p{max-width:490px;line-height:1.7}
+#page-dashboard .hero-tile{border-color:#594477;background:linear-gradient(145deg,#282039,#171421)}
+#page-dashboard .attention-panel{border-color:#49365f;background:radial-gradient(ellipse at 0% 0%,#8b5cf61c,transparent 55%),linear-gradient(115deg,#171321,#111018 75%);box-shadow:0 14px 34px #0002}
+#page-dashboard .attention-copy h3{font-size:clamp(16px,2vw,19px);letter-spacing:-.025em}
+#page-dashboard .attention-items{align-content:center}
+#page-dashboard .attention-item{min-height:68px;transition:border-color .18s ease,transform .18s ease}
+#page-dashboard .attention-item:hover{border-color:#6b528e;transform:translateY(-1px)}
+#page-dashboard .dashboard-section-head{margin:28px 0 13px;align-items:end}
+#page-dashboard .dashboard-section-head h3{font-size:19px;letter-spacing:-.035em}
+#page-dashboard .stats .stat{position:relative;overflow:hidden}
+#page-dashboard .stats .stat:after{content:"";position:absolute;inset:0 auto 0 0;width:2px;background:linear-gradient(180deg,#a78bfa88,transparent);opacity:.7}
+#page-dashboard .insight-grid{gap:12px}
+#page-dashboard .insight{border:1px solid #302a3e;background:linear-gradient(150deg,#171420,#111018);border-radius:15px;padding:17px}
+#page-dashboard .insight .value{letter-spacing:-.045em}
+#page-dashboard .columns>.panel,#page-dashboard .columns>div>.panel{border-radius:17px}
+#page-dashboard #dashTasks .task{background:#17151f}
+#page-dashboard .quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#page-dashboard .quick button{min-width:0;text-align:left;border:1px solid #302a3e;border-radius:12px;padding:13px;background:#17151f}
+#page-dashboard .quick button:hover{border-color:#72578f;background:#1d1828}
+#page-dashboard .quick button strong{display:block;font-size:12px}
+#page-dashboard .quick button span{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4}
+@media(max-width:900px){
+ #page-dashboard .dashboard-hero{padding:clamp(20px,4vw,30px)}
+ #page-dashboard .hero-copy h2{font-size:clamp(29px,5vw,39px)}
+ #page-dashboard .attention-panel{grid-template-columns:1fr}
+ #page-dashboard .attention-link{justify-self:start}
+ #page-dashboard .columns{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:560px){
+ #page-dashboard .dashboard-hero{min-height:0}
+ #page-dashboard .hero-art{opacity:.42;transform:scale(.8);transform-origin:top right}
+ #page-dashboard .hero-copy{position:relative;z-index:1}
+ #page-dashboard .hero-bottomline{gap:8px;flex-wrap:wrap;font-size:9px}
+ #page-dashboard .attention-items{grid-template-columns:minmax(0,1fr)}
+ #page-dashboard .dashboard-section-head{margin-top:23px}
+ #page-dashboard .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #page-dashboard .insight-grid{grid-template-columns:minmax(0,1fr)}
+ #page-dashboard .quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){#page-dashboard .attention-item{transition:none}}
+
 </style>
 </head>
 <body class="access-locked">
