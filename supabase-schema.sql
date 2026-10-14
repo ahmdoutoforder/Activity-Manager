@@ -126,7 +126,7 @@ begin
     values (new_workspace, auth.uid(), 'owner');
   return new_workspace;
 end;
-$;
+$$;
 revoke all on function public.uniplanner_create_workspace(text) from public;
 grant execute on function public.uniplanner_create_workspace(text) to authenticated;
 
