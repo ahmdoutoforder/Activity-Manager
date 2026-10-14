@@ -115,6 +115,25 @@ $$;
 revoke all on function public.uniplanner_leave_workspace(uuid) from public, anon;
 grant execute on function public.uniplanner_leave_workspace(uuid) to authenticated;
 
+-- SECURITY DEFINER helper avoids recursive RLS evaluation in membership policies.
+create or replace function public.uniplanner_is_workspace_owner(target_workspace uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $
+  select exists (
+    select 1
+    from public.uniplanner_workspace_members m
+    where m.workspace_id = target_workspace
+      and m.user_id = auth.uid()
+      and m.role = 'owner'
+  );
+$;
+revoke all on function public.uniplanner_is_workspace_owner(uuid) from public, anon;
+grant execute on function public.uniplanner_is_workspace_owner(uuid) to authenticated;
+
 -- Prevent a workspace owner from bypassing ownership transfer by deleting their
 -- own membership row directly. Non-owners can leave; owners can remove other members.
 drop policy if exists "Members can leave or owners can remove members"
@@ -126,12 +145,6 @@ create policy "Members can leave or owners can remove members"
     (user_id = auth.uid() and role <> 'owner')
     or (
       user_id <> auth.uid()
-      and exists (
-        select 1
-        from public.uniplanner_workspace_members owner_row
-        where owner_row.workspace_id = uniplanner_workspace_members.workspace_id
-          and owner_row.user_id = auth.uid()
-          and owner_row.role = 'owner'
-      )
+      and public.uniplanner_is_workspace_owner(workspace_id)
     )
   );
