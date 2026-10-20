@@ -48,6 +48,26 @@ $;
 revoke all on function public.uniplanner_is_workspace_owner(uuid) from public, anon;
 grant execute on function public.uniplanner_is_workspace_owner(uuid) to authenticated;
 
+-- Security-definer lookup is needed because discoverable non-members cannot read
+-- workspace rows under the existing member-only workspace SELECT policy.
+create or replace function public.uniplanner_workspace_accepts_join_request(target_workspace uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $
+  select coalesce(public.uniplanner_is_approved(), false) and exists (
+    select 1
+    from public.uniplanner_workspaces w
+    where w.id = target_workspace
+      and w.visibility = 'discoverable'
+      and w.join_mode = 'request_to_join'
+  );
+$;
+revoke all on function public.uniplanner_workspace_accepts_join_request(uuid) from public, anon;
+grant execute on function public.uniplanner_workspace_accepts_join_request(uuid) to authenticated;
+
 create table if not exists public.uniplanner_workspace_invitations (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
@@ -198,12 +218,7 @@ create policy "Approved users can request to join"
   with check (
     public.uniplanner_is_approved()
     and user_id = auth.uid()
-    and exists (
-      select 1 from public.uniplanner_workspaces w
-      where w.id = workspace_id
-        and w.visibility = 'discoverable'
-        and w.join_mode = 'request_to_join'
-    )
+    and public.uniplanner_workspace_accepts_join_request(workspace_id)
     and not public.uniplanner_is_workspace_member(workspace_id)
   );
 
