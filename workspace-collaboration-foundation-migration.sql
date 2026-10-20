@@ -28,6 +28,26 @@ begin
   end if;
 end $$;
 
+-- Define the owner helper here as well so this migration does not depend on
+-- the workspace lifecycle migration having created it first.
+create or replace function public.uniplanner_is_workspace_owner(target_workspace uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public
+as $
+  select exists (
+    select 1
+    from public.uniplanner_workspace_members m
+    where m.workspace_id = target_workspace
+      and m.user_id = auth.uid()
+      and m.role = 'owner'
+  );
+$;
+revoke all on function public.uniplanner_is_workspace_owner(uuid) from public, anon;
+grant execute on function public.uniplanner_is_workspace_owner(uuid) to authenticated;
+
 create table if not exists public.uniplanner_workspace_invitations (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.uniplanner_workspaces(id) on delete cascade,
@@ -99,6 +119,35 @@ create table if not exists public.uniplanner_workspace_activity (
 );
 create index if not exists uniplanner_workspace_activity_recent
   on public.uniplanner_workspace_activity(workspace_id, created_at desc);
+
+-- Keep project/resource ownership and workspace scope stable after creation.
+create or replace function public.uniplanner_guard_workspace_content_scope()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $
+begin
+  if new.workspace_id is distinct from old.workspace_id then
+    raise exception 'Workspace content cannot be moved to another workspace';
+  end if;
+  if new.created_by is distinct from old.created_by then
+    raise exception 'Content creator cannot be changed';
+  end if;
+  return new;
+end;
+$;
+revoke all on function public.uniplanner_guard_workspace_content_scope() from public, anon, authenticated;
+
+drop trigger if exists uniplanner_projects_scope_guard on public.uniplanner_projects;
+create trigger uniplanner_projects_scope_guard
+before update on public.uniplanner_projects
+for each row execute function public.uniplanner_guard_workspace_content_scope();
+
+drop trigger if exists uniplanner_resources_scope_guard on public.uniplanner_workspace_resources;
+create trigger uniplanner_resources_scope_guard
+before update on public.uniplanner_workspace_resources
+for each row execute function public.uniplanner_guard_workspace_content_scope();
 
 alter table public.uniplanner_workspace_invitations enable row level security;
 alter table public.uniplanner_workspace_join_requests enable row level security;
