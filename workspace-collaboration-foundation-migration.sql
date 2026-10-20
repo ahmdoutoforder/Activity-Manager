@@ -36,7 +36,7 @@ language sql
 stable
 security definer
 set search_path = pg_catalog, public
-as $
+as $fn$
   select exists (
     select 1
     from public.uniplanner_workspace_members m
@@ -44,7 +44,7 @@ as $
       and m.user_id = auth.uid()
       and m.role = 'owner'
   );
-$;
+$fn$;
 revoke all on function public.uniplanner_is_workspace_owner(uuid) from public, anon;
 grant execute on function public.uniplanner_is_workspace_owner(uuid) to authenticated;
 
@@ -56,7 +56,7 @@ language sql
 stable
 security definer
 set search_path = pg_catalog, public
-as $
+as $fn$
   select coalesce(public.uniplanner_is_approved(), false) and exists (
     select 1
     from public.uniplanner_workspaces w
@@ -64,7 +64,7 @@ as $
       and w.visibility = 'discoverable'
       and w.join_mode = 'request_to_join'
   );
-$;
+$fn$;
 revoke all on function public.uniplanner_workspace_accepts_join_request(uuid) from public, anon;
 grant execute on function public.uniplanner_workspace_accepts_join_request(uuid) to authenticated;
 
@@ -146,7 +146,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = pg_catalog, public
-as $
+as $fn$
 begin
   if new.workspace_id is distinct from old.workspace_id then
     raise exception 'Workspace content cannot be moved to another workspace';
@@ -156,7 +156,7 @@ begin
   end if;
   return new;
 end;
-$;
+$fn$;
 revoke all on function public.uniplanner_guard_workspace_content_scope() from public, anon, authenticated;
 
 drop trigger if exists uniplanner_projects_scope_guard on public.uniplanner_projects;
