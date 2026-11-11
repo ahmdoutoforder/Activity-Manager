@@ -7,8 +7,10 @@ Run this only against the isolated test Supabase project first. Production rollo
 - [ ] `anon` has no direct SELECT/INSERT/UPDATE/DELETE/TRUNCATE privilege on public UniPlanner tables.
 - [ ] `authenticated` retains only the table CRUD privileges required by the app.
 - [ ] `authenticated` has no TRUNCATE, TRIGGER, or REFERENCES privilege on public app tables.
+- [ ] `anon` and `authenticated` have no direct privileges on public identity sequences.
 - [ ] New public tables created by the PostgreSQL migration owner inherit the restricted table defaults.
 - [ ] New public functions created by the PostgreSQL migration owner do not grant EXECUTE to PUBLIC, anon, or authenticated by default.
+- [ ] New public sequences created by the PostgreSQL migration owner do not grant sequence privileges to anon or authenticated by default.
 - [ ] Required RPCs retain explicit authenticated EXECUTE; anon cannot execute them.
 
 ## Workspace integrity and authorization
