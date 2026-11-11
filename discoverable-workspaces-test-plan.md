@@ -8,6 +8,7 @@
 - Join requests are created through a SECURITY DEFINER RPC that verifies workspace mode, account approval and existing membership.
 - Only one pending request per user/workspace is allowed. A rejected or cancelled request may be submitted again.
 - Owners continue to approve/reject through `uniplanner_review_workspace_join_request`.
+- Requesters can cancel their own pending request through `uniplanner_cancel_workspace_join_request`.
 
 ## Two-account validation
 1. Owner creates a workspace and sets visibility to discoverable and join mode to request_to_join.
