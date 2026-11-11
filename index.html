@@ -404,6 +404,23 @@ a{ text-decoration-color:#a78bfa66 }
 .dashboard-workspace-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:21px 23px;margin:0 0 25px;border:1px solid #514079;border-radius:19px;background:radial-gradient(ellipse at 0% 0%,#a78bfa24,transparent 58%),linear-gradient(120deg,#1b1730,#101827 78%);box-shadow:0 14px 34px #0002}
 .workspace-kicker{display:block;color:#c4b5fd;font-size:10px;font-weight:800;letter-spacing:1.6px}.dashboard-workspace-card h3{font:800 19px Manrope;letter-spacing:-.5px;margin:7px 0 5px}.dashboard-workspace-card p{font-size:12px;color:#a8a0c4;line-height:1.6;margin:0 0 12px}.workspace-feature-tags{display:flex;gap:7px;flex-wrap:wrap}.workspace-feature-tags span{border:1px solid #40365f;background:#211c36;color:#d8ceff;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:700}.dashboard-workspace-card>.btn{white-space:nowrap;background:#a78bfa;border-color:#a78bfa;color:#100d1d}
 @media(max-width:700px){.dashboard-workspace-card{grid-template-columns:1fr;align-items:start;padding:18px}.dashboard-workspace-card>.btn{justify-self:start}}
+
+/* Workspace hub: clearer navigation for the shared study space. */
+.workspace-tabs{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:8px;margin-bottom:14px;border:1px solid #40365f;border-radius:14px;background:linear-gradient(120deg,#171329,#101827)}
+.workspace-tabs .btn{flex:0 0 auto;white-space:nowrap;border-radius:10px;font-size:11px;padding:10px 13px;background:#151d2d;border-color:#34415b;color:#b9c5dc}
+.workspace-tabs .btn.primary{background:linear-gradient(135deg,#b8a2ff,#8d79e8);border-color:#b8a2ff;color:#120e20;box-shadow:0 5px 16px #9b83ff26}
+.workspace-hub-intro{background:radial-gradient(ellipse at 100% 0%,#a78bfa20,transparent 48%),linear-gradient(130deg,#171d31,#111827)}
+.workspace-hub-intro p{color:var(--muted);font-size:12px;line-height:1.65;margin:7px 0 0}
+.workspace-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}
+.workspace-quick-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;text-align:left;padding:14px;border:1px solid #34415b;border-radius:13px;background:#131e30;color:var(--text);cursor:pointer;transition:border-color .18s ease,transform .18s ease,background .18s ease}
+.workspace-quick-card:hover{border-color:#9a85ed;background:#1b2340;transform:translateY(-2px)}
+.workspace-quick-card strong{font-size:12px}.workspace-quick-card span{font-size:10px;color:var(--muted);line-height:1.4}
+.workspace-section{min-width:0}.workspace-member-row{align-items:center}
+#workspaceMembersList .task{align-items:center}
+#workspaceMembersList .tag{white-space:nowrap}
+@media(max-width:900px){.workspace-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.workspace-tabs{margin-left:-2px;margin-right:-2px;padding:7px}.workspace-tabs .btn{padding:10px 12px}.workspace-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body class="access-locked">
@@ -638,6 +655,191 @@ async function showWorkspaceTab(tab,w,overview,extra){
  }catch(e){extra.innerHTML='<div class="panel"><h3>Workspace settings</h3><div class="empty">Settings need the collaboration migration on the connected database: '+esc(e.message)+'</div></div>'}
  }
 }
+
+
+/* Workspace hub navigation: split existing collaboration tools into focused sections. */
+let workspaceHubSections = null;
+const showWorkspaceTabBeforeHub = showWorkspaceTab;
+const loadWorkspaceTasksBeforeHub = loadWorkspaceTasks;
+
+async function loadWorkspaceHubMembers(w) {
+  const sections = workspaceHubSections;
+  const box = sections && sections.membersList;
+  if (!box || sections.workspaceId !== w.id || !supa || !user) return;
+  box.innerHTML = '<div class="empty">Loading workspace members…</div>';
+  try {
+    const { data: members, error } = await supa.from('uniplanner_workspace_members')
+      .select('user_id,role,joined_at')
+      .eq('workspace_id', w.id)
+      .order('joined_at', { ascending: true });
+    if (error) throw error;
+    if (!workspaceHubSections || workspaceHubSections.workspaceId !== w.id) return;
+    const profiles = await loadWorkspaceProfiles((members || []).map(m => m.user_id));
+    if (!workspaceHubSections || workspaceHubSections.workspaceId !== w.id) return;
+    const myMembership = (members || []).find(m => m.user_id === user.id);
+    const canManage = myMembership?.role === 'owner';
+    box.innerHTML = (members || []).length ? members.map(m => {
+      const display = profiles.get(m.user_id) || (m.user_id === user.id ? prefs.displayName : '') || 'Member';
+      const joined = m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '';
+      const isSelf = m.user_id === user.id;
+      const canRemove = canManage && !isSelf && m.role !== 'owner';
+      return '<div class="task workspace-member-row"><div class="task-main"><div class="task-title">' +
+        esc(display) + (isSelf ? ' (you)' : '') +
+        '</div><div class="task-meta"><span class="tag">' + esc(m.role) +
+        '</span>' + (joined ? '<span>Joined ' + esc(joined) + '</span>' : '') +
+        '</div></div>' + (canRemove ? '<button class="btn" type="button" data-hub-remove-member="' +
+        esc(m.user_id) + '">Remove</button>' : '') + '</div>';
+    }).join('') : '<div class="empty">No members found for this workspace.</div>';
+    box.querySelectorAll('[data-hub-remove-member]').forEach(button => {
+      button.onclick = async () => {
+        const target = button.dataset.hubRemoveMember;
+        const label = profiles.get(target) || 'this member';
+        if (!confirm('Remove ' + label + ' from this workspace? Their personal planner data will not be affected.')) return;
+        button.disabled = true;
+        try {
+          const { error } = await supa.from('uniplanner_workspace_members')
+            .delete().eq('workspace_id', w.id).eq('user_id', target).neq('role', 'owner');
+          if (error) throw error;
+          toast('Member removed from the workspace.');
+          await loadWorkspaceTasks();
+        } catch (e) {
+          toast('Could not remove member: ' + (e.message || 'Unknown error'), 'error');
+          button.disabled = false;
+        }
+      };
+    });
+  } catch (e) {
+    box.innerHTML = '<div class="empty">Could not load members: ' + esc(e.message || 'Unknown error') + '</div>';
+  }
+}
+
+showWorkspaceTab = async function(tab, w, overview, extra) {
+  const sections = workspaceHubSections;
+  if (!sections || sections.workspaceId !== w.id) {
+    return showWorkspaceTabBeforeHub(tab, w, overview, extra);
+  }
+  if (['tasks', 'discussion', 'chat', 'members'].includes(tab)) {
+    workspaceTab = tab;
+    document.querySelectorAll('#workspaceContent .workspace-tabs [data-wtab]').forEach(button => {
+      button.classList.toggle('primary', button.dataset.wtab === tab);
+    });
+    overview.hidden = true;
+    extra.replaceChildren();
+    if (sections[tab]) extra.appendChild(sections[tab]);
+    if (tab === 'members') await loadWorkspaceHubMembers(w);
+    return;
+  }
+  if (tab === 'resources') {
+    await showWorkspaceTabBeforeHub(tab, w, overview, extra);
+    if (sections.notes) extra.appendChild(sections.notes);
+    return;
+  }
+  return showWorkspaceTabBeforeHub(tab, w, overview, extra);
+};
+
+loadWorkspaceTasks = async function() {
+  workspaceHubSections = null;
+  await loadWorkspaceTasksBeforeHub();
+  const root = $('workspaceContent');
+  const w = workspaces.find(item => item.id === activeWorkspaceId);
+  if (!root || !w || !supa || !user) return;
+  const overview = root.querySelector('#workspaceOverviewTab');
+  const tabs = root.querySelector('.workspace-tabs');
+  const extra = root.querySelector('#workspaceExtraTab');
+  if (!overview || !tabs || !extra || tabs.dataset.hubVersion === '2') return;
+
+  const makePanel = (heading, description) => {
+    const panel = document.createElement('section');
+    panel.className = 'panel workspace-section';
+    const title = document.createElement('h3');
+    title.textContent = heading;
+    const sub = document.createElement('p');
+    sub.className = 'sub';
+    sub.textContent = description;
+    panel.append(title, sub);
+    return panel;
+  };
+  const move = (node, panel) => { if (node) panel.appendChild(node); };
+  const tasksPanel = makePanel('Shared tasks', 'Create, assign and track the work your group needs to finish.');
+  const taskList = overview.querySelector('#sharedTaskList');
+  const taskListHeading = taskList?.previousElementSibling;
+  [
+    overview.querySelector('#sharedTitle')?.closest('.field'),
+    overview.querySelector('#sharedDate')?.closest('.formgrid'),
+    overview.querySelector('#sharedCategory')?.closest('.formgrid'),
+    overview.querySelector('#sharedAssignee')?.closest('.field'),
+    overview.querySelector('#createSharedTaskBtn'),
+    taskListHeading,
+    taskList
+  ].forEach(node => move(node, tasksPanel));
+
+  const membersPanel = makePanel('Workspace members', 'See who is in the group, manage membership and invite classmates.');
+  const inviteField = overview.querySelector('#inviteEmail')?.closest('.field');
+  move(inviteField, membersPanel);
+  const membersList = document.createElement('div');
+  membersList.id = 'workspaceMembersList';
+  membersList.className = 'task-list';
+  membersList.style.marginTop = '14px';
+  membersPanel.appendChild(membersList);
+
+  const notesPanel = overview.querySelector('#teamNoteTitle')?.closest('.panel') || null;
+  const discussionPanel = overview.querySelector('#discussionTask')?.closest('.panel') || null;
+  const chatPanel = overview.querySelector('#groupChatList')?.closest('.panel') || null;
+  const actionBar = overview.querySelector('#leaveWorkspaceBtn')?.parentElement ||
+    overview.querySelector('#deleteWorkspaceBtn')?.parentElement || null;
+  const summary = overview.querySelector('.group-summary');
+  const privacy = overview.querySelector('.small-label');
+
+  const intro = document.createElement('div');
+  intro.className = 'panel workspace-hub-intro';
+  const introTitle = document.createElement('h3');
+  introTitle.textContent = w.name;
+  const introText = document.createElement('p');
+  introText.textContent = 'Your group’s shared home. Keep deadlines, projects, notes and conversations together.';
+  intro.append(introTitle, introText);
+  const quick = document.createElement('div');
+  quick.className = 'workspace-quick-grid';
+  [
+    ['tasks', 'Shared tasks', 'Plan and assign group work'],
+    ['projects', 'Projects', 'Track larger assignments'],
+    ['resources', 'Notes & resources', 'Build a shared study library'],
+    ['chat', 'Group chat', 'Keep everyone in the loop'],
+    ['members', 'Members', 'Manage your classmates']
+  ].forEach(([tab, title, detail]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'workspace-quick-card';
+    button.dataset.wtab = tab;
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    const span = document.createElement('span');
+    span.textContent = detail;
+    button.append(strong, span);
+    button.onclick = () => showWorkspaceTab(tab, w, overview, extra);
+    quick.appendChild(button);
+  });
+  intro.appendChild(quick);
+  overview.replaceChildren(intro);
+  if (actionBar) overview.appendChild(actionBar);
+  if (summary) overview.appendChild(summary);
+  if (privacy) overview.appendChild(privacy);
+
+  tabs.dataset.hubVersion = '2';
+  tabs.innerHTML = '<button class="btn" type="button" data-wtab="overview">Overview</button>' +
+    '<button class="btn" type="button" data-wtab="tasks">Tasks</button>' +
+    '<button class="btn" type="button" data-wtab="projects">Projects</button>' +
+    '<button class="btn" type="button" data-wtab="resources">Notes &amp; resources</button>' +
+    '<button class="btn" type="button" data-wtab="discussion">Task discussion</button>' +
+    '<button class="btn" type="button" data-wtab="chat">Group chat</button>' +
+    '<button class="btn" type="button" data-wtab="members">Members</button>' +
+    '<button class="btn" type="button" data-wtab="requests">Join requests</button>' +
+    '<button class="btn" type="button" data-wtab="settings">Settings</button>';
+  tabs.querySelectorAll('[data-wtab]').forEach(button => {
+    button.onclick = () => showWorkspaceTab(button.dataset.wtab, w, overview, extra);
+  });
+  workspaceHubSections = { workspaceId: w.id, tasks: tasksPanel, notes: notesPanel, discussion: discussionPanel, chat: chatPanel, members: membersPanel, membersList };
+  await showWorkspaceTab(workspaceTab, w, overview, extra);
+};
 
 })();
 </script>
