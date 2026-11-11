@@ -542,14 +542,18 @@ async function loadDiscoverableWorkspaces(){
   const rows=data||[];
   box.innerHTML=rows.length?rows.map(w=>{
    const pending=w.request_status==='pending';
-   const label=pending?'Request pending':(w.request_status==='rejected'||w.request_status==='cancelled'?'Request again':'Request to join');
-   return '<div class="task"><div class="task-main"><div class="task-title">'+esc(w.workspace_name)+'</div><div class="task-meta"><span class="tag">'+esc(w.workspace_type==='course'?'Course workspace':'Study group')+'</span><span>'+Number(w.member_count||0)+' members</span></div></div><button class="btn '+(pending?'':'primary')+'" data-discover-request="'+esc(w.workspace_id)+'" '+(pending?'disabled':'')+'>'+label+'</button></div>';
+   const label=pending?'Cancel request':(w.request_status==='rejected'||w.request_status==='cancelled'?'Request again':'Request to join');
+   const action=pending?'data-discover-cancel':'data-discover-request';
+   return '<div class="task"><div class="task-main"><div class="task-title">'+esc(w.workspace_name)+'</div><div class="task-meta"><span class="tag">'+esc(w.workspace_type==='course'?'Course workspace':'Study group')+'</span><span>'+Number(w.member_count||0)+' members</span></div></div><button class="btn '+(pending?'':'primary')+'" '+action+'="'+esc(w.workspace_id)+'">'+label+'</button></div>';
   }).join(''):'<div class="empty">No discoverable workspaces found. Try another name, or ask a classmate to make their workspace discoverable.</div>';
-  box.querySelectorAll('[data-discover-request]').forEach(b=>b.onclick=async()=>{
-   const id=b.getAttribute('data-discover-request');b.disabled=true;
-   const {error}=await supa.rpc('uniplanner_request_workspace_join',{target_workspace:id,request_message:''});
-   if(error){toast('Could not request to join: '+error.message,'error');b.disabled=false;return}
-   toast('Join request sent. The workspace owner can review it.');
+  box.querySelectorAll('[data-discover-request],[data-discover-cancel]').forEach(b=>b.onclick=async()=>{
+   const cancel=b.hasAttribute('data-discover-cancel');
+   const id=b.getAttribute('data-discover-cancel')||b.getAttribute('data-discover-request');
+   b.disabled=true;
+   const {error}=await supa.rpc(cancel?'uniplanner_cancel_workspace_join_request':'uniplanner_request_workspace_join',
+    cancel?{target_workspace:id}:{target_workspace:id,request_message:''});
+   if(error){toast((cancel?'Could not cancel request: ':'Could not request to join: ')+error.message,'error');b.disabled=false;return}
+   toast(cancel?'Join request cancelled.':'Join request sent. The workspace owner can review it.');
    await loadDiscoverableWorkspaces();
   });
  }catch(e){box.innerHTML='<div class="empty">Could not discover workspaces: '+esc(e.message)+'</div>'}
