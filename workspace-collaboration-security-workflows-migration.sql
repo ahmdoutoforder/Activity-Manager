@@ -61,7 +61,7 @@ declare
 begin
   if caller_id is null then raise exception 'Sign in before reviewing requests'; end if;
   if not coalesce(public.uniplanner_is_approved(), false) then raise exception 'Approved access is required'; end if;
-  if p_decision not in ('approve', 'reject') then raise exception 'Decision must be approve or reject'; end if;
+  if p_decision is null or p_decision not in ('approve', 'reject') then raise exception 'Decision must be approve or reject'; end if;
 
   select * into request_row from public.uniplanner_workspace_join_requests
   where id = p_request_id for update;
@@ -105,7 +105,7 @@ declare
 begin
   if caller_id is null then raise exception 'Sign in before responding to an invitation'; end if;
   if not coalesce(public.uniplanner_is_approved(), false) then raise exception 'Approved access is required'; end if;
-  if p_decision not in ('accept', 'decline') then raise exception 'Decision must be accept or decline'; end if;
+  if p_decision is null or p_decision not in ('accept', 'decline') then raise exception 'Decision must be accept or decline'; end if;
 
   select * into invitation_row from public.uniplanner_workspace_invitations
   where id = p_invitation_id for update;
@@ -115,10 +115,7 @@ begin
     raise exception 'This invitation belongs to another account';
   end if;
   if invitation_row.status <> 'pending' then raise exception 'This invitation is no longer pending'; end if;
-  if invitation_row.expires_at <= now() then
-    update public.uniplanner_workspace_invitations set status = 'expired' where id = p_invitation_id;
-    raise exception 'This invitation has expired';
-  end if;
+  if invitation_row.expires_at <= now() then raise exception 'This invitation has expired'; end if;
 
   if p_decision = 'accept' then
     insert into public.uniplanner_workspace_members(workspace_id, user_id, role)
@@ -137,6 +134,75 @@ begin
   end if;
 end;
 $fn$;
+
+
+-- Guard status transitions and immutable identity fields even inside privileged RPCs.
+create or replace function public.uniplanner_guard_join_request_update()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, public
+as $fn$
+begin
+  if new.id is distinct from old.id
+     or new.workspace_id is distinct from old.workspace_id
+     or new.user_id is distinct from old.user_id
+     or new.message is distinct from old.message
+     or new.created_at is distinct from old.created_at then
+    raise exception 'Join request identity and message cannot be changed';
+  end if;
+  if old.status <> 'pending' then raise exception 'Only pending join requests can change'; end if;
+  if new.status = 'cancelled' then
+    if old.user_id is distinct from auth.uid()
+       or new.reviewed_at is distinct from old.reviewed_at
+       or new.reviewed_by is distinct from old.reviewed_by then
+      raise exception 'Only the requester can cancel a request';
+    end if;
+  elsif new.status in ('approved', 'rejected') then
+    if not public.uniplanner_is_workspace_owner(old.workspace_id)
+       or new.reviewed_by is distinct from auth.uid()
+       or new.reviewed_at is null then
+      raise exception 'Only the workspace owner can review a request';
+    end if;
+  else
+    raise exception 'Invalid join request status transition';
+  end if;
+  return new;
+end;
+$fn$;
+
+drop trigger if exists uniplanner_join_request_update_guard on public.uniplanner_workspace_join_requests;
+create trigger uniplanner_join_request_update_guard
+before update on public.uniplanner_workspace_join_requests
+for each row execute function public.uniplanner_guard_join_request_update();
+
+create or replace function public.uniplanner_guard_invitation_update()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, public
+as $fn$
+begin
+  if new.id is distinct from old.id
+     or new.workspace_id is distinct from old.workspace_id
+     or new.invited_email is distinct from old.invited_email
+     or new.invited_by is distinct from old.invited_by
+     or new.created_at is distinct from old.created_at
+     or new.expires_at is distinct from old.expires_at then
+    raise exception 'Invitation details cannot be changed';
+  end if;
+  if old.status <> 'pending' or new.status not in ('accepted', 'declined') then
+    raise exception 'Invalid invitation status transition';
+  end if;
+  if new.invited_user_id is distinct from auth.uid() or new.responded_at is null then
+    raise exception 'Only the invited account can respond';
+  end if;
+  return new;
+end;
+$fn$;
+
+drop trigger if exists uniplanner_invitation_update_guard on public.uniplanner_workspace_invitations;
+create trigger uniplanner_invitation_update_guard
+before update on public.uniplanner_workspace_invitations
+for each row execute function public.uniplanner_guard_invitation_update();
 
 revoke all on function public.uniplanner_invite_member(uuid, text) from public, anon;
 grant execute on function public.uniplanner_invite_member(uuid, text) to authenticated;
