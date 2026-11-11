@@ -4,30 +4,44 @@
 
 REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
 
--- Keep every SECURITY DEFINER routine on a trusted, explicit search_path.
-ALTER FUNCTION public.uniplanner_is_workspace_member(uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_create_workspace(text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_invite_member(uuid, text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_is_approved() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_sync_access_user() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_is_admin() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_admin_list_users() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_admin_set_access(uuid, text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_admin_list_memberships() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_admin_remove_workspace_member(uuid, uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_delete_workspace(uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_leave_workspace(uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_is_workspace_owner(uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_workspace_accepts_join_request(uuid) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_guard_workspace_content_scope() SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_review_workspace_join_request(uuid, text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_respond_workspace_invitation(uuid, text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_discover_workspaces(text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_request_workspace_join(uuid, text) SET search_path = pg_catalog, public;
-ALTER FUNCTION public.uniplanner_cancel_workspace_join_request(uuid) SET search_path = pg_catalog, public;
+-- Pin every SECURITY DEFINER function that exists in this project. The isolated
+-- test project may intentionally lag production in a small number of RPCs.
+DO $hardening$
+DECLARE
+  signature text;
+  signatures text[] := ARRAY[
+    'public.uniplanner_is_workspace_member(uuid)',
+    'public.uniplanner_create_workspace(text)',
+    'public.uniplanner_invite_member(uuid, text)',
+    'public.uniplanner_is_approved()',
+    'public.uniplanner_sync_access_user()',
+    'public.uniplanner_is_admin()',
+    'public.uniplanner_admin_list_users()',
+    'public.uniplanner_admin_set_access(uuid, text)',
+    'public.uniplanner_admin_list_memberships()',
+    'public.uniplanner_admin_remove_workspace_member(uuid, uuid)',
+    'public.uniplanner_delete_workspace(uuid)',
+    'public.uniplanner_leave_workspace(uuid)',
+    'public.uniplanner_is_workspace_owner(uuid)',
+    'public.uniplanner_workspace_accepts_join_request(uuid)',
+    'public.uniplanner_guard_workspace_content_scope()',
+    'public.uniplanner_review_workspace_join_request(uuid, text)',
+    'public.uniplanner_respond_workspace_invitation(uuid, text)',
+    'public.uniplanner_discover_workspaces(text)',
+    'public.uniplanner_request_workspace_join(uuid, text)',
+    'public.uniplanner_cancel_workspace_join_request(uuid)'
+  ];
+BEGIN
+  FOREACH signature IN ARRAY signatures LOOP
+    IF to_regprocedure(signature) IS NOT NULL THEN
+      EXECUTE format('ALTER FUNCTION %s SET search_path = pg_catalog, public', signature);
+    END IF;
+  END LOOP;
+END
+$hardening$;
 
--- These policies existed in a pre-hardening test schema with direct auth calls.
--- The predicates are unchanged; auth context is evaluated once per statement.
+-- These predicates retain the same authorization logic; only statement-constant
+-- auth context lookups are moved into scalar subqueries for init-plan evaluation.
 ALTER POLICY "Creators or owners can delete shared tasks" ON public.uniplanner_shared_tasks
 USING (((created_by = (select auth.uid())) OR (EXISTS (
   SELECT 1 FROM public.uniplanner_workspace_members m
