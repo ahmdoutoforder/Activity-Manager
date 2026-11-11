@@ -506,7 +506,7 @@ async function loadWorkspaceInvitations(){
  if(!panel||!box||!supa||!user)return;
  try{
   const {data:rows,error}=await supa.from('uniplanner_workspace_invitations')
-   .select('id,workspace_id,invited_email,expires_at')
+   .select('id,workspace_id,invited_email,invited_user_id,expires_at')
    .eq('status','pending').order('created_at',{ascending:false}).limit(50);
   if(error)throw error;
   const mine=(rows||[]).filter(r=>r.invited_email?.toLowerCase()===user.email?.toLowerCase()||r.invited_user_id===user.id);
