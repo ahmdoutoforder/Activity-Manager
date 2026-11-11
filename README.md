@@ -1,45 +1,80 @@
-# UniPlanner v2
+# UniPlanner
 
-A clean, local-first university planner designed for GitHub Pages. The rebuild starts with empty data and includes tasks/deadlines, a month calendar, weekly timetable, course grade-point tracker, faculty directory, focus timer, scratchpad and saved notes, JSON backup/import, and optional Supabase account sync.
+UniPlanner is a static GitHub Pages university planner with a Supabase-backed account and shared study-workspace layer.
 
-## Deploy to GitHub Pages
+## What is included
 
-1. Review the rebuild branch before publishing: [rebuild/uniplanner-v2](https://github.com/ahmdoutoforder/Activity-Manager/tree/rebuild/uniplanner-v2).
-2. Merge the branch into `main` when you're satisfied with the review.
-3. In repository **Settings → Pages**, publish from the `main` branch and root folder (if Pages isn't already configured).
-4. Open the published site and hard-refresh it. The new app uses the `uniplanner_v2_data` local-storage key and starts with an empty planner; the older app's `uni_events` data is not imported.
+### Personal planner
+- Overview with upcoming work and calendar
+- Tasks and deadlines
+- Calendar and weekly timetable
+- Grades and GPA tracking
+- Attendance tracking
+- Faculty directory
+- Personal notes and scratchpad
+- Focus timer
+- JSON backup export and import
 
-## Local data and backups
+### Shared study workspaces
+- Workspace creation and membership
+- Shared projects and tasks, including member assignment
+- Shared notes and resources
+- Task discussions and group chat
+- Member directory and owner-managed membership
+- Invitations and discoverable workspaces with join requests
+- Workspace activity data
 
-- Tasks, timetable, grades, faculty, notes and preferences save in the current browser profile.
-- Use **Export backup** regularly. Keep the JSON file somewhere safe.
-- Importing a backup replaces the current device data only after confirmation.
-- Browser data can be removed by clearing site data, using another browser/profile, or using another device. Local storage alone is not cross-device sync.
-- Browser notifications are **off by default**. If enabled, the app requests permission and records each task's reminder ID so a due-today task is not repeatedly announced. The website must be open, and browser notification support/permission must be available.
+### Accounts and access
+- Supabase email/password authentication
+- Owner approval gate for UniPlanner access
+- Owner admin panel for approval/revocation and membership management
+- Cross-device personal planner sync
+- Server-side Edge Function for owner invitations
 
-## Optional cross-device sync (Supabase)
+## Architecture
 
-GitHub Pages is static hosting; shared data needs a separate backend. This app uses Supabase Auth plus a per-user JSON payload table.
+- Hosting: GitHub Pages (static site).
+- Frontend: `index.html` plus `semester-upgrade.js`.
+- PWA assets: `manifest.webmanifest`, `sw.js`, and `notification-icon.svg`.
+- Backend: Supabase Auth and PostgreSQL.
+- Personal planner data is stored as a per-user JSON payload in `uniplanner_data`.
+- Shared workspace content is stored in relational tables protected by RLS.
+- Attendance is part of the personal planner payload; it is not a separate attendance table.
+- The browser uses a Supabase publishable key. Never place a Supabase service-role/secret key in frontend code.
+- The `admin-invite-user` Edge Function uses its service-role secret server-side and requires a verified caller token plus the owner/admin check.
 
-1. Create a Supabase project.
-2. Open **SQL Editor** and run the contents of [supabase-schema.sql](./supabase-schema.sql).
-3. In Supabase project settings, copy the project URL and the **anon/publishable** client key. Never place a service-role key in browser code.
-4. Open UniPlanner → **Settings & sync**, enter the project URL and anon key, then save preferences.
-5. Enter an email and password and select **Sign in / create account**. If email confirmation is enabled, confirm the message before signing in.
-6. Test on one device first, then sign in to the same account on another device.
+## Sync, backups, and notifications
 
-### Sync behavior, study groups and limitations
+- Local planner changes are saved in the current browser profile.
+- Cloud sync is per account and can be used across devices.
+- Sync is timestamp-based last-write-wins with a confirmation before replacing local data when the cloud copy is newer. It does not merge simultaneous edits. Export a backup before resolving a conflict or importing a file.
+- Browser task reminders require notification permission and the site to be open.
+- Study Group alerts use a live Supabase Realtime connection while the signed-in page is active. The current service worker handles notification clicks; it does not implement background Web Push delivery. Do not rely on background notifications on iPhone.
 
-- Row-level security restricts each authenticated account to its own personal-data row.
-- Local edits are timestamped; cloud data newer than the local copy prompts before replacing it. Export a backup before resolving a conflict.
-- The **Study groups** section supports shared workspaces, shared deadlines, task completion, and inviting an existing account by email. A classmate must sign up in the same Supabase project first. Workspace access is protected by row-level security; workspace owners can invite members.
-- Shared tasks use Supabase tables and are visible to workspace members after refresh/reload. This is shared database collaboration, not a full real-time presence/chat/activity-feed system.
-- The app never claims local-only storage is cross-device sync. A failed cloud request leaves the local copy available and reports a sync error.
-- Avoid editing the same personal account simultaneously on multiple devices while a conflict is pending; choose the intended copy deliberately.
+## Deployment
 
-## Notes
+The production website is published from the `main` branch at the repository root through GitHub Pages.
 
-- GPA is a weighted estimate from the grade points and credit hours you enter. Confirm the official scale with your university.
-- Focus timer runs while this page is open and does not depend on desktop notifications.
-- The page loads Google Fonts and the Supabase JavaScript client from CDNs; those external resources need internet access.
-- No software can honestly guarantee zero bugs. Verify the main workflows and keep backups before relying on it for critical deadlines.
+The GitHub Actions validation workflow checks inline JavaScript syntax and a small set of required UI markers. It is not a browser end-to-end test suite. Real desktop, Android, and iPhone checks are still required before relying on every workflow.
+
+## Supabase setup and migration safety
+
+This repository contains historical schema and feature migration SQL files. **There is not yet one complete, verified, ordered bootstrap sequence for a brand-new Supabase project.**
+
+- Do not run every SQL file in the repository in arbitrary order.
+- Do not rerun the historical `supabase-schema.sql` against the existing production project as a reset or upgrade.
+- The existing production project contains later collaboration, access-control, and hardening changes, some of which were originally applied manually and are not fully represented in migration history.
+- See [the Phase 1 technical audit](docs/PHASE-1-TECHNICAL-AUDIT.md) for the verified current state, applied hardening, outstanding warnings, and remaining regression work.
+- Test database changes in the isolated test project first. Review the exact migration and its rollback implications before applying schema changes to production.
+
+## Security notes
+
+- Every public UniPlanner table must have RLS enabled.
+- Admin data is intentionally not directly readable or writable by browser roles; protected functions perform the owner checks.
+- Required authenticated SECURITY DEFINER RPCs must retain their caller/approval/ownership checks and pinned `search_path`. Do not revoke them indiscriminately.
+- New public RPCs must receive explicit `EXECUTE` grants for only the intended roles.
+- Supabase leaked-password protection is a dashboard Auth setting. See the Phase 1 audit for the current finding and setup path.
+
+## Development
+
+No frontend build step is currently required. The app is a static site. Keep changes scoped, preserve existing local-storage formats and Supabase row structures, and add regression coverage before changing sync, authentication, access control, or workspace behavior.

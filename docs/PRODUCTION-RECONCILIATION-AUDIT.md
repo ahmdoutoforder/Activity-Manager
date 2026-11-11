@@ -1,3 +1,5 @@
+> **Historical snapshot — superseded.** This document records the earlier production reconciliation state before the Phase 1 audit dated 11 November 2026. Its statements about missing collaboration tables, absent migration history, and broad function grants are historical and must not be treated as the current project state. See [PHASE-1-TECHNICAL-AUDIT.md](PHASE-1-TECHNICAL-AUDIT.md) for the verified current state and changes made after this snapshot.
+
 # UniPlanner production reconciliation audit
 
 Audit date: 2026-11-11
