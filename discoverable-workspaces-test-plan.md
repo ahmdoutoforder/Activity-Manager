@@ -10,6 +10,15 @@
 - Owners continue to approve/reject through `uniplanner_review_workspace_join_request`.
 - Requesters can cancel their own pending request through `uniplanner_cancel_workspace_join_request`.
 
+## Validation completed
+- Applied the migration to both the isolated test project and production project after a successful rollback-only dry run against production.
+- Ran transactional two-account tests in both environments.
+- Confirmed discovery returns only discoverable/request-to-join workspaces and excludes private workspaces.
+- Confirmed duplicate pending requests are rejected.
+- Confirmed owners can approve/reject; approval creates membership atomically and removes the workspace from the member's discovery results.
+- Confirmed requesters can cancel pending requests and submit a new request after cancellation or rejection.
+- All temporary test workspaces, memberships and requests were rolled back; production row counts remain unchanged.
+
 ## Two-account validation
 1. Owner creates a workspace and sets visibility to discoverable and join mode to request_to_join.
 2. Approved non-member searches and sees only that workspace; private/invite-only workspaces are not returned.
