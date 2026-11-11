@@ -30,6 +30,14 @@ Use two approved accounts, A (workspace owner) and B (classmate):
 8. Confirm creators can delete their own projects/resources; other members cannot; workspace owners can.
 9. Confirm the existing personal planner payload and existing workspace tasks, notes, comments, and messages remain unchanged.
 
+## Validation already completed on the isolated test project
+- The migration was applied successfully to project ref `rigsjtbaoxkdbumwuhdn`.
+- Verified the three RPCs exist as SECURITY DEFINER functions, are executable by `authenticated`, and are not executable by `anon`.
+- Verified direct invitation updates are no longer exposed, request cancellation is requester-only, project/resource deletion policies are creator-or-owner, and client activity inserts are disabled.
+- Ran a transactional two-account workflow simulation using the two existing test identities: owner creates workspace and sends pending invitation; invitee accepts and becomes a member; owner creates a discoverable/request-to-join workspace; invitee submits a request; owner approves and membership is granted. The whole simulation was rolled back, including a temporary approval-state change, so no test rows or access changes were retained.
+- The second test identity is currently pending approval. A real browser/API RLS test with two approved accounts is still required before production rollout.
+- Supabase security advisor still reports legacy SECURITY DEFINER functions, leaked-password protection disabled, and the admin table with RLS but no policy. These are recorded for separate review; they were not changed in this migration.
+
 ## Important boundaries
 - This migration does not modify uniplanner_data, auth approval state, existing workspace memberships, or production.
 - Open joining remains disabled in the UI until a dedicated safe discovery/join flow is implemented.
