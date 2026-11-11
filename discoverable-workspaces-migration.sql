@@ -115,9 +115,34 @@ exception
 end;
 $fn$;
 
+create or replace function public.uniplanner_cancel_workspace_join_request(target_workspace uuid)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $fn$
+declare
+  caller_id uuid := auth.uid();
+begin
+  if caller_id is null then raise exception 'Sign in before cancelling a request'; end if;
+  if not coalesce(public.uniplanner_is_approved(), false) then
+    raise exception 'Approved UniPlanner access is required';
+  end if;
+
+  update public.uniplanner_workspace_join_requests
+  set status = 'cancelled'
+  where workspace_id = target_workspace
+    and user_id = caller_id
+    and status = 'pending';
+  if not found then raise exception 'No pending join request was found'; end if;
+end;
+$fn$;
+
 revoke all on function public.uniplanner_discover_workspaces(text) from public, anon;
 grant execute on function public.uniplanner_discover_workspaces(text) to authenticated;
 revoke all on function public.uniplanner_request_workspace_join(uuid, text) from public, anon;
 grant execute on function public.uniplanner_request_workspace_join(uuid, text) to authenticated;
+revoke all on function public.uniplanner_cancel_workspace_join_request(uuid) from public, anon;
+grant execute on function public.uniplanner_cancel_workspace_join_request(uuid) to authenticated;
 
 commit;
