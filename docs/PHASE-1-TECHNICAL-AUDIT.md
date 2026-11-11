@@ -21,9 +21,10 @@ Applied first to the isolated test project, verified, then applied to production
 - Revoked all direct table privileges from `anon` on public-schema tables.
 - Retained the normal `SELECT`, `INSERT`, `UPDATE`, and `DELETE` privileges required by authenticated application requests; RLS continues to determine which rows a user may access.
 - Revoked `TRUNCATE`, `TRIGGER`, and `REFERENCES` from `authenticated`.
+- Revoked direct access to public identity sequences from `anon` and `authenticated`, and hardened future sequence defaults.
 - Updated the PostgreSQL migration-owner default table privileges so future public tables follow the same restrictions.
 
-Verification on both projects confirmed that `anon` has no direct table access and `authenticated` has no `TRUNCATE`, `TRIGGER`, or `REFERENCES` privilege on the app tables.
+Verification on both projects confirmed that `anon` has no direct table access, `authenticated` has no `TRUNCATE`, `TRIGGER`, or `REFERENCES` privilege on app tables, and neither browser role has direct privileges on the public identity sequence.
 
 ### 2. Default privileges for future public functions
 
