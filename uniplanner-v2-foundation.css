@@ -575,3 +575,28 @@ body {
   .attendance-snapshot { padding:12px; }
   .attendance-snapshot strong { font-size:23px; }
 }
+
+/* Recent shared-workspace activity feed. */
+.workspace-activity-item {
+  display:flex; align-items:flex-start; gap:11px;
+  padding:12px 0; border-bottom:1px solid #30243d;
+}
+.workspace-activity-item:last-child { border-bottom:0; }
+.workspace-activity-mark {
+  flex:0 0 30px; width:30px; height:30px;
+  display:grid; place-items:center; border-radius:10px;
+  color:#d5b8ff; background:#2a1d39; font-size:14px;
+}
+.workspace-activity-copy { min-width:0; flex:1; }
+.workspace-activity-meta {
+  color:#a99bb8; font-size:10px; line-height:1.5;
+  overflow-wrap:anywhere;
+}
+.workspace-activity-meta strong { color:#eee5f8; }
+.workspace-activity-meta time {
+  display:block; margin-top:3px; color:#81758f; font-size:9px;
+}
+.workspace-activity-copy p {
+  margin:6px 0 0; color:#c6bacf; font-size:11px;
+  line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere;
+}
