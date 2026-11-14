@@ -19,10 +19,12 @@
 
 1. `workspace-assignments-storage-migration.sql` — creates the private bucket, assignment/resource/submission tables, triggers, RLS policies and Storage object policies.
 2. `workspace-assignment-indexes-migration.sql` — adds supporting indexes to every newly introduced foreign key.
+3. `workspace-assignment-submission-status-migration.sql` — makes Postgres reject both Storage uploads and submission rows when an assignment is closed or archived.
 
-Both migrations have been applied and recorded only in the isolated Supabase project `uniplanner test` under migration names:
+All three migrations have been applied and recorded only in the isolated Supabase project `uniplanner test` under migration names:
 - `workspace_assignments_private_storage`
 - `workspace_assignment_fk_indexes`
+- `workspace_assignment_submission_status`
 
 No production Supabase schema, bucket, Storage object or user data was changed by this phase.
 
@@ -47,6 +49,10 @@ A transaction using the two approved test accounts verified:
 5. A different member in the same workspace can read the submission metadata and file object.
 6. A user cannot upload into another member's submission folder.
 7. A user cannot read an assignment in a separate workspace where they are not a member.
+8. A member cannot bypass a closed assignment by uploading a file directly to Storage.
+9. A member cannot insert submission metadata directly for a closed assignment.
+
+The closed-assignment tests confirmed both attempts were rejected by RLS, and no submission row was created.
 
 The test used temporary `storage.objects` metadata rows to exercise RLS policies; it did **not** transfer real file bytes through the Storage HTTP API. The transaction was rolled back. The isolated test project returned to zero test workspaces, assignments, resources, submissions and Storage object rows.
 
