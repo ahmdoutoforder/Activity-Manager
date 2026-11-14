@@ -516,3 +516,32 @@ body {
 .attendance-subject-head strong { font-size:13px; }
 .attendance-subject-head span { margin-top:4px; font-size:10px; color:#a096ae; }
 @media(max-width:700px){.attendance-course-form{align-items:stretch}.attendance-course-form .search,.attendance-course-form .btn{width:100%}.attendance-course-list{grid-template-columns:1fr}.attendance-buttons .btn{min-width:42%;}}
+
+/* Give the selected workspace the visual priority; keep the workspace picker compact. */
+#page-collaborate .columns {
+  grid-template-columns: minmax(220px, .72fr) minmax(0, 1.8fr);
+  align-items: start;
+}
+#page-collaborate .columns > .panel:first-child { position: sticky; top: 18px; }
+#page-collaborate #workspaceContent { min-width: 0; }
+#page-collaborate .workspace-tabs { gap: 6px; padding: 7px; margin-bottom: 16px; }
+#page-collaborate .workspace-tabs .btn { flex: 0 0 auto; border-radius: 9px; min-height: 36px; }
+#page-collaborate .workspace-quick-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+#page-collaborate .workspace-quick-card {
+  min-width: 0; min-height: 84px; padding: 13px;
+  border: 1px solid #40304f; border-radius: 13px;
+  background: linear-gradient(145deg,#1b1425,#120e18); color: #f2eafa; text-align: left;
+}
+#page-collaborate .workspace-quick-card strong,
+#page-collaborate .workspace-quick-card span { display: block; }
+#page-collaborate .workspace-quick-card strong { font: 750 12px Manrope,sans-serif; margin-bottom: 6px; }
+#page-collaborate .workspace-quick-card span { color: #a99bb8; font-size: 10px; line-height: 1.5; }
+#page-collaborate .workspace-quick-card:hover { border-color: #8e65bb; background: linear-gradient(145deg,#261a35,#171020); }
+@media(max-width:1000px) {
+  #page-collaborate .columns { grid-template-columns: minmax(0,1fr); }
+  #page-collaborate .columns > .panel:first-child { position: static; }
+}
+@media(max-width:700px) {
+  #page-collaborate .workspace-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #page-collaborate .workspace-tabs { margin-right: -2px; }
+}
