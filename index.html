@@ -873,11 +873,11 @@ async function renderWorkspaceProjectTasks(workspace, project, extra) {
     ]);
     if (tasksResult.error) throw tasksResult.error;
     if (membersResult.error) throw membersResult.error;
-    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+    if (request !== projectTasksRequest || $('wProjectTasksPanel') !== panel) return;
 
     const members = membersResult.data || [];
     const profiles = await loadWorkspaceProfiles(members.map(member => member.user_id));
-    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+    if (request !== projectTasksRequest || $('wProjectTasksPanel') !== panel) return;
     const myRole = members.find(member => member.user_id === user.id)?.role || 'member';
     const isOwner = myRole === 'owner';
     const nameFor = id => id ? (profiles.get(id) || (id === user.id ? prefs.displayName : '') || 'Member') : 'Unassigned';
@@ -976,7 +976,7 @@ async function renderWorkspaceProjectTasks(workspace, project, extra) {
       };
     });
   } catch (error) {
-    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+    if (request !== projectTasksRequest || $('wProjectTasksPanel') !== panel) return;
     panel.innerHTML = '<h3>' + esc(project.title) + ' · tasks</h3><div class="empty">Project-linked tasks are not available yet on this database. Confirm the project-task migration is installed in this environment. ' + esc(error.message || '') + '</div>';
   }
 }
