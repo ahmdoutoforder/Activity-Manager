@@ -1,0 +1,194 @@
+/* UniPlanner v2 — Phase 1 visual foundation.
+   Kept separate from the legacy inline styles so the redesign remains reversible. */
+:root {
+  color-scheme: dark;
+  --bg: #09070d;
+  --panel: #100d15;
+  --panel2: #17121e;
+  --line: #30263a;
+  --text: #f4effa;
+  --muted: #a096ae;
+  --blue: #b48aff;
+  --mint: #63dfb8;
+  --red: #ff7f98;
+  --yellow: #f2c975;
+  --purple: #c8a8ff;
+  --shadow: 0 20px 58px #0008;
+  --panel-glow: #b48aff10;
+  --accent-violet: #b48aff;
+  --accent-violet-strong: #9d70ef;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-color: #57416d #0a080e;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 12% -16%, #633b8c29, transparent 43%),
+    radial-gradient(ellipse at 96% 8%, #44225f18, transparent 34%),
+    var(--bg);
+  color: var(--text);
+}
+
+.logo {
+  background: linear-gradient(145deg, #c7a7ff, #8653d8);
+  color: #150d21;
+  box-shadow: 0 9px 28px #8d5bdc35;
+}
+
+.sidebar,
+.panel,
+.stat,
+.card {
+  background: linear-gradient(150deg, #15101b 0%, #0e0b12 100%);
+  border-color: var(--line);
+  box-shadow: 0 12px 32px #0003, inset 0 1px 0 #ffffff05;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #15101c 0%, #0e0b12 100%);
+}
+
+.nav {
+  color: #a69bb5;
+  transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.nav:hover {
+  color: #f4edff;
+  background: #21182c;
+}
+
+.nav.active {
+  color: #fbf8ff;
+  background: linear-gradient(100deg, #38264d, #241a31);
+  box-shadow: inset 3px 0 0 var(--accent-violet), inset 0 0 0 1px #a879e51f;
+}
+
+.nav.active .ico {
+  color: var(--accent-violet);
+}
+
+.navlabel,
+.section-kicker,
+.workspace-kicker,
+.eyebrow {
+  color: #c29eff;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #c09bff, #a77bed);
+  border-color: #b18aff;
+  color: #170e23;
+  box-shadow: 0 6px 18px #9b69e52b;
+}
+
+.btn.primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px #9b69e541;
+}
+
+.pill,
+.btn,
+.iconbtn {
+  border-color: #382d46;
+  background-color: #17121e;
+}
+
+.pill:hover,
+.btn:not(.primary):hover,
+.iconbtn:hover {
+  border-color: #76579a;
+  background-color: #21182c;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-color: #c29eff;
+  box-shadow: 0 0 0 3px #b48aff25;
+}
+
+.day.today {
+  border-color: #b48aff;
+  background: #241832;
+}
+
+.day.selected {
+  box-shadow: inset 0 0 0 1px #74dfbd;
+}
+
+.event-dot.group {
+  background: #39244e;
+  color: #e4caff;
+}
+
+.progress span,
+.insight-bar span {
+  background: linear-gradient(90deg, #a77bed, #c39dff);
+}
+
+.attention-panel,
+.dashboard-workspace-card,
+.insight,
+.workspace-tabs {
+  border-color: #3b2c4d;
+}
+
+.dashboard-hero {
+  border-color: #392b49;
+}
+
+.dashboard-hero,
+.dashboard-workspace-card {
+  box-shadow: 0 18px 48px #0004, inset 0 1px 0 #ffffff08;
+}
+
+.workspace-feature-tags span,
+.tag {
+  border-color: #3a2c49;
+}
+
+.tag {
+  background: #21192b;
+  color: #dbc9f5;
+}
+
+.gate-card {
+  background: linear-gradient(145deg, #17111f, #0e0b13);
+  border-color: #3a2c49;
+}
+
+.gate-message.gate-info {
+  background: #211a2d;
+  border-color: #594272;
+  color: #e6d8fa;
+}
+
+@media (max-width: 700px) {
+  .sidebar {
+    background: #120e18;
+    border-color: #30263a;
+  }
+
+  .nav.active {
+    box-shadow: inset 0 -3px 0 var(--accent-violet), inset 0 0 0 1px #a879e51f;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
