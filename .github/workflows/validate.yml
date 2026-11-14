@@ -41,6 +41,8 @@ jobs:
             'id="dashboardAttendanceSessions"',
             'id="dashboardApprovedLeave"',
             'id="dashboardWorkspaceCard"',
+            'timetable-day-group',
+            'timetable-class-card',
             'data-assigned-workspace-task',
             'async function renderWorkspaceActivity',
             'id = \'workspaceRecentActivity\'',
