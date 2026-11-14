@@ -5,13 +5,14 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const html = fs.readFileSync('index.html', 'utf8');
-const start = html.indexOf('function isMissingOptionalWorkspaceActivityTable(');
+const start = html.indexOf('const WORKSPACE_ACTIVITY_FEED_LIMIT = 10;');
 const end = html.indexOf('\nasync function readOptionalWorkspaceActivityRows', start);
 assert.ok(start >= 0 && end > start, 'workspace activity helpers must exist');
 
 const context = vm.createContext({});
 vm.runInContext(
   html.slice(start, end) +
+    '\nthis.WORKSPACE_ACTIVITY_FEED_LIMIT = WORKSPACE_ACTIVITY_FEED_LIMIT;' +
     '\nthis.buildWorkspaceActivityItems = buildWorkspaceActivityItems;' +
     '\nthis.isMissingOptionalWorkspaceActivityTable = isMissingOptionalWorkspaceActivityTable;',
   context
@@ -64,10 +65,34 @@ const limited = build({
 }, 6);
 assert.equal(limited.length, 6, 'the activity feed must respect its requested limit');
 assert.equal(limited[0].id, '14', 'activity must be sorted newest first');
+const defaultWindow = build({ messages: Array.from({ length: 15 }, (_, index) => ({
+  id: String(index), created_by: 'user', body: 'Message ' + index,
+  created_at: new Date(Date.UTC(2026, 10, 14, 10, index)).toISOString()
+})) });
+assert.equal(defaultWindow.length, 10, 'the default event window matches the ten displayed items');
+assert.equal(defaultWindow[9].id, '5', 'ten newest items from one busy source must all remain eligible');
 assert.equal(
   build({ messages: [{ id: 'bad', created_by: 'user', body: 'Bad date', created_at: 'not-a-date' }] }).length,
   0,
   'events without valid timestamps must be ignored'
+);
+
+const feedStart = html.indexOf('async function renderWorkspaceActivity(');
+const feedEnd = html.indexOf('\nasync function loadWorkspaceHubMembers', feedStart);
+assert.ok(feedStart >= 0 && feedEnd > feedStart, 'activity feed loader must exist');
+const feedSource = html.slice(feedStart, feedEnd);
+assert.equal(
+  (feedSource.match(/\\.limit\\(WORKSPACE_ACTIVITY_FEED_LIMIT\\)/g) || []).length,
+  5,
+  'each fixed-size event source must query at least the number of rows displayed in the feed'
+);
+const optionalStart = html.indexOf('async function readOptionalWorkspaceActivityRows(');
+const optionalEnd = html.indexOf('\nasync function renderWorkspaceActivity', optionalStart);
+assert.ok(optionalStart >= 0 && optionalEnd > optionalStart, 'optional assignment reads must exist');
+assert.match(
+  html.slice(optionalStart, optionalEnd),
+  /\\.limit\\(WORKSPACE_ACTIVITY_FEED_LIMIT\\)/,
+  'optional assignment sources must use the same event window'
 );
 
 assert.equal(
