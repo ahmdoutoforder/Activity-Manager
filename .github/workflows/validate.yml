@@ -169,3 +169,6 @@ jobs:
 
       - name: Test workspace Storage cleanup worker
         run: node tests/workspace-storage-cleanup.test.js
+
+      - name: Test workspace activity feed aggregation
+        run: node tests/workspace-activity-feed.test.js
