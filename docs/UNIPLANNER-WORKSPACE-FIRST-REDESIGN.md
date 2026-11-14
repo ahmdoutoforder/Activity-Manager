@@ -27,7 +27,7 @@
 - Reordered primary navigation around the workspace-first product hierarchy; legacy Grades/GPA, Faculty, Focus and Quick Notes pages remain in source but are not primary navigation.
 - Reframed the dashboard and Shared Study Workspaces page; the shared-workspace entry point now appears before personal task attention, and the dashboard uses attendance metrics instead of GPA/credits/assessment tracking.
 - Reworked the weekly timetable into day-grouped cards with clear time blocks and a current-day highlight; the dashboard also shows today's scheduled classes.
-- Added a workspace-home activity feed that brings together existing RLS-protected chat, task discussion, shared-task creation, projects, notes and resources, plus assignment and submission events when the optional assignment tables are present.
+- Added a workspace-home activity feed that brings together existing RLS-protected chat, task discussion, shared-task creation, projects, notes and resources, plus assignment and submission events when the optional assignment tables are present. Inserts to chat, task discussions and shared tasks refresh the open feed through the existing Realtime publication, independent of browser-notification permission.
 - Removed attendance displays and controls from the legacy Grades module so attendance is managed only in its independent section.
 - Added the obsidian/violet responsive shell and improved the workspace picker/content proportions.
 - Added a separate attendanceCourses payload collection. Existing attendance records migrate in memory from existing grade courses while preserving their IDs; a one-time marker prevents removed attendance classes from being re-created.
@@ -50,5 +50,5 @@
 - External semester-upgrade.js syntax check: passed.
 - Attendance independence and approved-leave regression tests: passed.
 - Workspace Storage cleanup worker tests: passed.
-- Workspace activity feed now has dedicated regression coverage for aggregation, newest-first sorting, task-to-comment context, result limits, invalid timestamps, graceful handling when optional assignment tables are not installed, and fetching the full ten-event window from each source.
+- Workspace activity feed now has dedicated regression coverage for aggregation, newest-first sorting, task-to-comment context, result limits, invalid timestamps, graceful handling when optional assignment tables are not installed, and fetching the full ten-event window from each source. Realtime event handling is tested separately to ensure foreground refresh continues when notification preferences/permission are off, while browser alerts remain preference- and permission-gated.
 - No production Supabase migration or data change was made by this redesign branch.
