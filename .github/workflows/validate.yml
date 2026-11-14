@@ -43,6 +43,7 @@ jobs:
             'id="dashboardWorkspaceCard"',
             'timetable-day-group',
             'timetable-class-card',
+            'id="dashboardTodayClasses"',
             'data-assigned-workspace-task',
             'async function renderWorkspaceActivity',
             'id = \'workspaceRecentActivity\'',
