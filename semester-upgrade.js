@@ -81,6 +81,10 @@ function renderAttendance(){
  if($('attendanceAtRisk'))$('attendanceAtRisk').textContent=subjects.filter(x=>x.s.pct!==null&&x.s.pct<threshold+7).length;
  if($('attendanceThreshold'))$('attendanceThreshold').textContent=threshold+'%';
  if($('attendanceMinimumInput'))$('attendanceMinimumInput').value=threshold;
+ if($('dashboardAttendanceOverall'))$('dashboardAttendanceOverall').textContent=pct===null?'—':Math.round(pct)+'%';
+ if($('dashboardAttendanceClasses'))$('dashboardAttendanceClasses').textContent=d.attendanceCourses.length;
+ if($('dashboardAttendanceSessions'))$('dashboardAttendanceSessions').textContent=valid.length;
+ if($('dashboardApprovedLeave'))$('dashboardApprovedLeave').textContent=d.attendance.filter(a=>a.status==='Approved Leave').length;
  const courseList=$('attendanceCourseList');
  if(courseList)courseList.innerHTML=subjects.length?subjects.map(({g,s})=>'<div class="attendance-course-row"><span><strong>'+esc(g.name)+'</strong><small>'+esc(g.type)+' · '+s.total+' counted sessions'+(s.approvedLeave?' · '+s.approvedLeave+' approved leave':'')+'</small></span><button class="mini" type="button" data-remove-attendance-course="'+esc(g.id)+'" aria-label="Remove '+esc(g.name)+' from attendance">×</button></div>').join(''):'<div class="sub">Add your first lecture or lab below.</div>';
  const q=$('attendanceQuickList');
