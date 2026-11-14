@@ -61,6 +61,11 @@ jobs:
           const dashboardEnd = html.indexOf('<section class="page" id="page-calendar"', dashboardStart);
           const dashboard = html.slice(dashboardStart, dashboardEnd);
           if (/data-goto="(?:grades|faculty|focus|notes)"/.test(dashboard)) throw new Error('Legacy destinations must not appear in dashboard quick actions');
+          const workspaceCardIndex = html.indexOf('id="dashboardWorkspaceCard"', dashboardStart);
+          const attentionIndex = html.indexOf('<section class="attention-panel"', dashboardStart);
+          if (workspaceCardIndex < dashboardStart || attentionIndex < 0 || workspaceCardIndex > attentionIndex) {
+            throw new Error('The shared-workspace card must appear before personal task attention on the dashboard');
+          }
 
           const projectMigration = fs.readFileSync('workspace-project-task-link-migration.sql', 'utf8').toLowerCase();
           for (const marker of [
