@@ -130,5 +130,11 @@ jobs:
           console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, assignment/storage safeguards, and workspace cleanup worker.`);
           NODE
 
+      - name: Check external JavaScript syntax
+        run: node --check semester-upgrade.js
+
+      - name: Test attendance independence and approved leave
+        run: node tests/attendance-independence.test.js
+
       - name: Test workspace Storage cleanup worker
         run: node tests/workspace-storage-cleanup.test.js
