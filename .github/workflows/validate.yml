@@ -93,5 +93,12 @@ jobs:
             if (!assignmentIndexes.includes(marker)) throw new Error(`Missing assignment FK index: ${marker}`);
           }
 
+          const submissionStatusMigration = fs.readFileSync('workspace-assignment-submission-status-migration.sql', 'utf8').toLowerCase();
+          if (!submissionStatusMigration.includes("a.status = 'open'") ||
+              !submissionStatusMigration.includes('on storage.objects for insert') ||
+              !submissionStatusMigration.includes('on public.uniplanner_assignment_submissions for insert')) {
+            throw new Error('Missing closed-assignment submission policy safeguards');
+          }
+
           console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, and assignment/storage migration safeguards.`);
           NODE
