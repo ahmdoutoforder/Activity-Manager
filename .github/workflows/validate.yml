@@ -27,8 +27,27 @@ jobs:
             fs.writeFileSync(file, script);
             execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
           });
-          for (const marker of ['id="fullCalendar"', 'id="allTasks"', 'id="syncNowBtn"', 'id="timerStart"']) {
-            if (!html.includes(marker)) throw new Error(`Missing required UI element: ${marker}`);
+          for (const marker of [
+            'id="fullCalendar"',
+            'id="allTasks"',
+            'id="syncNowBtn"',
+            'id="timerStart"',
+            'id="dashAssignedWorkspaceTasks"',
+            'id="assignedWorkspaceTasksList"',
+            'data-assigned-workspace-task'
+          ]) {
+            if (!html.includes(marker)) throw new Error(`Missing required UI element/behavior marker: ${marker}`);
           }
-          console.log(`Validated ${scripts.length} inline script(s) and core UI markers.`);
+
+          const projectMigration = fs.readFileSync('workspace-project-task-link-migration.sql', 'utf8').toLowerCase();
+          for (const marker of [
+            'add column if not exists project_id uuid',
+            'on delete set null',
+            'new.project_id',
+            'new.workspace_id'
+          ]) {
+            if (!projectMigration.includes(marker)) throw new Error(`Missing project-task migration safeguard: ${marker}`);
+          }
+
+          console.log(`Validated ${scripts.length} inline script(s), required UI markers, and project-task migration safeguards.`);
           NODE

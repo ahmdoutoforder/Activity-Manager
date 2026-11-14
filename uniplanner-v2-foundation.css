@@ -192,3 +192,35 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* Shared workspace tasks surfaced in the personal task inbox. */
+.assigned-workspace-preview {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #30263a;
+}
+
+.assigned-workspace-panel {
+  background: linear-gradient(150deg, #15101b 0%, #0e0b12 100%);
+}
+
+.assigned-workspace-completed {
+  margin-top: 14px;
+  border: 1px solid #30263a;
+  border-radius: 12px;
+  padding: 11px 13px;
+  background: #120e18;
+}
+
+.assigned-workspace-completed summary {
+  cursor: pointer;
+  color: #b9a9ca;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.assigned-workspace-completed[open] summary {
+  margin-bottom: 10px;
+  color: #e8def4;
+}
