@@ -25,10 +25,11 @@
 ## Current implementation in PR #51
 
 - Reordered primary navigation around the workspace-first product hierarchy; legacy Grades/GPA, Faculty, Focus and Quick Notes pages remain in source but are not primary navigation.
-- Reframed the dashboard and Shared Study Workspaces page.
+- Reframed the dashboard and Shared Study Workspaces page; removed the GPA/credits/assessment summary from the dashboard in favor of attendance metrics.
+- Added a workspace-home activity feed from the existing RLS-protected group chat and task-comment records.
 - Added the obsidian/violet responsive shell and improved the workspace picker/content proportions.
 - Added a separate attendanceCourses payload collection. Existing attendance records migrate in memory from existing grade courses while preserving their IDs; a one-time marker prevents removed attendance classes from being re-created.
-- Added separate Lecture and Lab types.
+- Added separate Lecture and Lab types, and an attendance snapshot on the dashboard.
 - Added Approved Leave status; percentage and counted-session totals include only Present and Absent. Approved Leave remains visible in history and is not treated as an absence.
 - Added automated tests for legacy attendance migration, independence from Grades, separate Lecture/Lab records, approved-leave math and intentionally empty class lists.
 - Extended CI to parse semester-upgrade.js and run the attendance regression suite.
@@ -47,4 +48,5 @@
 - External semester-upgrade.js syntax check: passed.
 - Attendance independence and approved-leave regression tests: passed.
 - Workspace Storage cleanup worker tests: passed.
+- Workspace activity feed is source-validated in CI.
 - No production Supabase migration or data change was made by this redesign branch.
