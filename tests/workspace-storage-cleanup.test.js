@@ -12,8 +12,15 @@ const bucketName = 'uniplanner-workspace-files';
 const workspaceId = '11111111-1111-4111-8111-111111111111';
 const memberId = '22222222-2222-4222-8222-222222222222';
 
-function createWorker({ removeFails = false, listFails = false, invalidPath = false, missingQueue = false } = {}) {
-  let jobDeleted = false;
+function createWorker({ removeFails = false, listFails = false, invalidPath = false, missingQueue = false, jobCount = 1 } = {}) {
+  const deletedJobs = new Set();
+  const jobs = Array.from({ length: jobCount }, (_, i) => ({
+    id: 'cleanup-job-' + (i + 1),
+    workspace_id: i === 0
+      ? workspaceId
+      : '11111111-1111-4111-8111-' + String(i + 1).padStart(12, '0')
+  }));
+  const rangeCalls = [];
   const removeCalls = [];
   const listCalls = [];
   const resourceFiles = Array.from({ length: 1001 }, (_, i) => ({
@@ -27,6 +34,9 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
       if (listFails) return { data: null, error: { message: 'simulated Storage listing failure' } };
       if (prefix === workspaceId) {
         return { data: [{ name: 'assignment-1', id: null }], error: null };
+      }
+      if (prefix.startsWith('11111111-1111-4111-8111-') && prefix !== workspaceId) {
+        return { data: [], error: null };
       }
       if (prefix === workspaceId + '/assignment-1') {
         return {
@@ -66,24 +76,22 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
       return {
         select() { return this; },
         order() { return this; },
-        async limit() {
+        async range(from, to) {
+          rangeCalls.push({ from, to });
           if (missingQueue) {
             return { data: null, error: { code: 'PGRST205', message: 'Could not find the table in the schema cache' } };
           }
-          return {
-            data: jobDeleted ? [] : [{ id: 'cleanup-job-1', workspace_id: workspaceId }],
-            error: null
-          };
+          return { data: jobs.slice(from, to + 1), error: null };
         },
         delete() {
           return {
             eq(column, value) {
               assert.equal(column, 'id');
-              assert.equal(value, 'cleanup-job-1');
+              const job = jobs.find(item => item.id === value);
               return {
                 async select() {
-                  jobDeleted = true;
-                  return { data: [{ id: 'cleanup-job-1' }], error: null };
+                  if (job) deletedJobs.add(value);
+                  return { data: job ? [{ id: value }] : [], error: null };
                 }
               };
             }
@@ -110,7 +118,8 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
     run: () => context.runWorker(),
     removeCalls,
     listCalls,
-    get jobDeleted() { return jobDeleted; }
+    rangeCalls,
+    get deletedJobCount() { return deletedJobs.size; }
   };
 }
 
@@ -123,7 +132,17 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
     assert.equal(result.removed, 1002);
     assert.deepEqual(fixture.removeCalls.map(batch => batch.length), [1000, 2]);
     assert.ok(fixture.listCalls.some(call => call.offset === 1000), 'worker must paginate Storage listings');
-    assert.equal(fixture.jobDeleted, true, 'job is deleted only after all removals succeed');
+    assert.equal(fixture.deletedJobCount, 1, 'job is deleted only after all removals succeed');
+  }
+
+  {
+    const fixture = createWorker({ jobCount: 12 });
+    const result = await fixture.run();
+    assert.equal(result.completed, 12, 'the worker must drain beyond the first ten jobs');
+    assert.equal(result.failed, 0);
+    assert.equal(result.total, 12);
+    assert.equal(fixture.deletedJobCount, 12);
+    assert.deepEqual(fixture.rangeCalls.map(range => range.from), [0], '12 jobs fit in one 100-row page');
   }
 
   {
@@ -131,7 +150,7 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
     const result = await fixture.run();
     assert.equal(result.completed, 0);
     assert.equal(result.failed, 1);
-    assert.equal(fixture.jobDeleted, false, 'failed deletion must leave its job queued');
+    assert.equal(fixture.deletedJobCount, 0, 'failed deletion must leave its job queued');
   }
 
   {
@@ -140,7 +159,7 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
     assert.equal(result.completed, 0);
     assert.equal(result.failed, 1);
     assert.equal(fixture.removeCalls.length, 0, 'listing failure must prevent all removals');
-    assert.equal(fixture.jobDeleted, false, 'listing failure must leave its job queued');
+    assert.equal(fixture.deletedJobCount, 0, 'listing failure must leave its job queued');
   }
 
   {
@@ -149,7 +168,7 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
     assert.equal(result.completed, 0);
     assert.equal(result.failed, 1);
     assert.equal(fixture.removeCalls.length, 0, 'unknown object paths must never be deleted');
-    assert.equal(fixture.jobDeleted, false);
+    assert.equal(fixture.deletedJobCount, 0);
   }
 
   {
