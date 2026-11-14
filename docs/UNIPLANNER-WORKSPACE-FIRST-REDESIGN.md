@@ -50,5 +50,5 @@
 - External semester-upgrade.js syntax check: passed.
 - Attendance independence and approved-leave regression tests: passed.
 - Workspace Storage cleanup worker tests: passed.
-- Workspace activity feed now has dedicated regression coverage for aggregation, newest-first sorting, task-to-comment context, result limits, invalid timestamps and graceful handling when optional assignment tables are not installed.
+- Workspace activity feed now has dedicated regression coverage for aggregation, newest-first sorting, task-to-comment context, result limits, invalid timestamps, graceful handling when optional assignment tables are not installed, and fetching the full ten-event window from each source.
 - No production Supabase migration or data change was made by this redesign branch.

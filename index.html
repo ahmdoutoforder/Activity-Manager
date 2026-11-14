@@ -748,6 +748,8 @@ let workspaceHubSections = null;
 const showWorkspaceTabBeforeHub = showWorkspaceTab;
 const loadWorkspaceTasksBeforeHub = loadWorkspaceTasks;
 
+const WORKSPACE_ACTIVITY_FEED_LIMIT = 10;
+
 function isMissingOptionalWorkspaceActivityTable(error) {
   const code = String(error?.code || '');
   const message = String(error?.message || '');
@@ -755,7 +757,7 @@ function isMissingOptionalWorkspaceActivityTable(error) {
     /could not find the table.*schema cache|relation .* does not exist/i.test(message);
 }
 
-function buildWorkspaceActivityItems(sources, limit = 10) {
+function buildWorkspaceActivityItems(sources, limit = WORKSPACE_ACTIVITY_FEED_LIMIT) {
   const rows = sources || {};
   const tasksById = new Map((rows.tasks || []).map(task => [task.id, task.title]));
   const assignmentsById = new Map((rows.assignments || []).map(assignment => [assignment.id, assignment.title]));
@@ -824,7 +826,7 @@ async function readOptionalWorkspaceActivityRows(table, columns, orderColumn, wo
   const { data, error } = await supa.from(table).select(columns)
     .eq('workspace_id', workspaceId)
     .order(orderColumn, { ascending: false })
-    .limit(8);
+    .limit(WORKSPACE_ACTIVITY_FEED_LIMIT);
   if (error) {
     if (isMissingOptionalWorkspaceActivityTable(error)) return [];
     throw error;
@@ -845,11 +847,11 @@ async function renderWorkspaceActivity(workspace, panel) {
       supa.from('uniplanner_group_messages')
         .select('id,created_by,body,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false }).limit(8),
+        .order('created_at', { ascending: false }).limit(WORKSPACE_ACTIVITY_FEED_LIMIT),
       supa.from('uniplanner_task_comments')
         .select('id,task_id,created_by,body,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false }).limit(8),
+        .order('created_at', { ascending: false }).limit(WORKSPACE_ACTIVITY_FEED_LIMIT),
       supa.from('uniplanner_shared_tasks')
         .select('id,title,description,due_date,created_by,created_at')
         .eq('workspace_id', workspace.id)
@@ -857,15 +859,15 @@ async function renderWorkspaceActivity(workspace, panel) {
       supa.from('uniplanner_projects')
         .select('id,title,description,created_by,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false }).limit(8),
+        .order('created_at', { ascending: false }).limit(WORKSPACE_ACTIVITY_FEED_LIMIT),
       supa.from('uniplanner_workspace_notes')
         .select('id,title,body,created_by,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false }).limit(8),
+        .order('created_at', { ascending: false }).limit(WORKSPACE_ACTIVITY_FEED_LIMIT),
       supa.from('uniplanner_workspace_resources')
         .select('id,title,description,resource_type,created_by,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false }).limit(8),
+        .order('created_at', { ascending: false }).limit(WORKSPACE_ACTIVITY_FEED_LIMIT),
       readOptionalWorkspaceActivityRows('uniplanner_assignments',
         'id,title,instructions,due_at,created_by,created_at', 'created_at', workspace.id),
       readOptionalWorkspaceActivityRows('uniplanner_assignment_resources',
@@ -886,7 +888,7 @@ async function renderWorkspaceActivity(workspace, panel) {
       notes: notesResult.data || [],
       resources: resourcesResult.data || [],
       assignments, assignmentResources, submissions
-    }, 10);
+    }, WORKSPACE_ACTIVITY_FEED_LIMIT);
     if (!items.length) {
       box.innerHTML = '<div class="empty">No group activity yet. Start with a shared task or say hello in chat.</div>';
       return;
