@@ -22,8 +22,13 @@ function ensureData(){
   d.attendanceCourses=(d.grades||[]).map(g=>({id:g.id,name:g.course,type:'Lecture'}));
   d.attendance.forEach(a=>{
    if(!d.attendanceCourses.some(c=>c.id===a.subjectId)){
-    d.attendanceCourses.push({id:a.subjectId||api().uid(),name:a.course||'Imported class',type:'Lecture'});
-    if(!a.subjectId)a.subjectId=d.attendanceCourses[d.attendanceCourses.length-1].id;
+    const matching=d.attendanceCourses.find(c=>c.name.toLowerCase()===String(a.course||'').trim().toLowerCase());
+    if(matching)a.subjectId=matching.id;
+    else{
+     const id=a.subjectId||api().uid();
+     d.attendanceCourses.push({id,name:a.course||'Imported class',type:'Lecture'});
+     if(!a.subjectId)a.subjectId=id;
+    }
    }
   });
   d.attendanceCoursesInitialized=true;
