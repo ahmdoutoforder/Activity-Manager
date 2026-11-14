@@ -34,7 +34,11 @@ jobs:
             'id="timerStart"',
             'id="dashAssignedWorkspaceTasks"',
             'id="assignedWorkspaceTasksList"',
-            'data-assigned-workspace-task'
+            'data-assigned-workspace-task',
+            'async function renderWorkspaceActivity',
+            'id = \'workspaceRecentActivity\'',
+            "from('uniplanner_group_messages')",
+            "from('uniplanner_task_comments')"
           ]) {
             if (!html.includes(marker)) throw new Error(`Missing required UI element/behavior marker: ${marker}`);
           }
