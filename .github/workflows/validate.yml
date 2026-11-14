@@ -49,7 +49,7 @@ jobs:
             if (!html.includes(marker)) throw new Error(`Missing required UI element/behavior marker: ${marker}`);
           }
 
-          const sidebar = html.match(/<aside class="sidebar"[\\s\\S]*?<\\/aside>/i)?.[0] || '';
+          const sidebar = html.match(/<aside class="sidebar"[\s\S]*?<\/aside>/i)?.[0] || '';
           for (const page of ['dashboard', 'collaborate', 'attendance', 'tasks', 'timetable', 'calendar', 'settings']) {
             if (!sidebar.includes('data-page="' + page + '"')) throw new Error('Missing primary navigation page: ' + page);
           }
