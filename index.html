@@ -748,55 +748,176 @@ let workspaceHubSections = null;
 const showWorkspaceTabBeforeHub = showWorkspaceTab;
 const loadWorkspaceTasksBeforeHub = loadWorkspaceTasks;
 
+function isMissingOptionalWorkspaceActivityTable(error) {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '');
+  return code === 'PGRST205' || code === '42P01' ||
+    /could not find the table.*schema cache|relation .* does not exist/i.test(message);
+}
+
+function buildWorkspaceActivityItems(sources, limit = 10) {
+  const rows = sources || {};
+  const tasksById = new Map((rows.tasks || []).map(task => [task.id, task.title]));
+  const assignmentsById = new Map((rows.assignments || []).map(assignment => [assignment.id, assignment.title]));
+  const items = [
+    ...(rows.messages || []).map(item => ({
+      id: item.id, kind: 'chat', actor_id: item.created_by,
+      created_at: item.created_at, context: 'posted in group chat',
+      subject: '', preview: item.body || ''
+    })),
+    ...(rows.comments || []).map(item => ({
+      id: item.id, kind: 'comment', actor_id: item.created_by,
+      created_at: item.created_at,
+      context: 'commented on ' + (tasksById.get(item.task_id) || 'a shared task'),
+      subject: '', preview: item.body || ''
+    })),
+    ...(rows.tasks || []).map(item => ({
+      id: item.id, kind: 'task', actor_id: item.created_by,
+      created_at: item.created_at, context: 'added a shared task',
+      subject: item.title || 'Untitled task',
+      preview: item.due_date ? 'Due ' + item.due_date : (item.description || '')
+    })),
+    ...(rows.projects || []).map(item => ({
+      id: item.id, kind: 'project', actor_id: item.created_by,
+      created_at: item.created_at, context: 'created a project',
+      subject: item.title || 'Untitled project', preview: item.description || ''
+    })),
+    ...(rows.notes || []).map(item => ({
+      id: item.id, kind: 'note', actor_id: item.created_by,
+      created_at: item.created_at, context: 'shared a study note',
+      subject: item.title || 'Untitled note', preview: item.body || ''
+    })),
+    ...(rows.resources || []).map(item => ({
+      id: item.id, kind: 'resource', actor_id: item.created_by,
+      created_at: item.created_at, context: 'added a study resource',
+      subject: item.title || 'Untitled resource',
+      preview: item.description || item.resource_type || ''
+    })),
+    ...(rows.assignments || []).map(item => ({
+      id: item.id, kind: 'assignment', actor_id: item.created_by,
+      created_at: item.created_at, context: 'published an assignment',
+      subject: item.title || 'Untitled assignment',
+      preview: item.due_at ? 'Due ' + item.due_at : (item.instructions || '')
+    })),
+    ...(rows.assignmentResources || []).map(item => ({
+      id: item.id, kind: 'assignment-resource', actor_id: item.uploaded_by,
+      created_at: item.created_at,
+      context: 'attached a file to ' + (assignmentsById.get(item.assignment_id) || 'an assignment'),
+      subject: item.original_file_name || 'Assignment file', preview: ''
+    })),
+    ...(rows.submissions || []).map(item => ({
+      id: item.id, kind: 'submission', actor_id: item.submitted_by,
+      created_at: item.submitted_at,
+      context: 'submitted work for ' + (assignmentsById.get(item.assignment_id) || 'an assignment'),
+      subject: item.original_file_name || 'Submission',
+      preview: item.note || ''
+    }))
+  ];
+  const safeLimit = Number.isFinite(Number(limit)) ? Math.max(1, Math.min(50, Math.floor(Number(limit)))) : 10;
+  return items
+    .filter(item => item.created_at && Number.isFinite(new Date(item.created_at).getTime()))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, safeLimit);
+}
+
+async function readOptionalWorkspaceActivityRows(table, columns, orderColumn, workspaceId) {
+  const { data, error } = await supa.from(table).select(columns)
+    .eq('workspace_id', workspaceId)
+    .order(orderColumn, { ascending: false })
+    .limit(8);
+  if (error) {
+    if (isMissingOptionalWorkspaceActivityTable(error)) return [];
+    throw error;
+  }
+  return data || [];
+}
+
 async function renderWorkspaceActivity(workspace, panel) {
   const box = panel && panel.querySelector('#workspaceRecentActivityList');
   if (!box || !supa || !user) return;
   box.innerHTML = '<div class="empty">Loading recent activity…</div>';
   try {
-    const [messagesResult, commentsResult, tasksResult] = await Promise.all([
+    const [
+      messagesResult, commentsResult, tasksResult,
+      projectsResult, notesResult, resourcesResult,
+      assignments, assignmentResources, submissions
+    ] = await Promise.all([
       supa.from('uniplanner_group_messages')
         .select('id,created_by,body,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false })
-        .limit(8),
+        .order('created_at', { ascending: false }).limit(8),
       supa.from('uniplanner_task_comments')
         .select('id,task_id,created_by,body,created_at')
         .eq('workspace_id', workspace.id)
-        .order('created_at', { ascending: false })
-        .limit(8),
+        .order('created_at', { ascending: false }).limit(8),
       supa.from('uniplanner_shared_tasks')
-        .select('id,title')
+        .select('id,title,description,due_date,created_by,created_at')
         .eq('workspace_id', workspace.id)
-        .limit(200)
+        .order('created_at', { ascending: false }).limit(100),
+      supa.from('uniplanner_projects')
+        .select('id,title,description,created_by,created_at')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false }).limit(8),
+      supa.from('uniplanner_workspace_notes')
+        .select('id,title,body,created_by,created_at')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false }).limit(8),
+      supa.from('uniplanner_workspace_resources')
+        .select('id,title,description,resource_type,created_by,created_at')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false }).limit(8),
+      readOptionalWorkspaceActivityRows('uniplanner_assignments',
+        'id,title,instructions,due_at,created_by,created_at', 'created_at', workspace.id),
+      readOptionalWorkspaceActivityRows('uniplanner_assignment_resources',
+        'id,assignment_id,uploaded_by,original_file_name,created_at', 'created_at', workspace.id),
+      readOptionalWorkspaceActivityRows('uniplanner_assignment_submissions',
+        'id,assignment_id,submitted_by,original_file_name,note,submitted_at', 'submitted_at', workspace.id)
     ]);
-    if (messagesResult.error) throw messagesResult.error;
-    if (commentsResult.error) throw commentsResult.error;
-    if (tasksResult.error) throw tasksResult.error;
+    for (const result of [messagesResult, commentsResult, tasksResult, projectsResult, notesResult, resourcesResult]) {
+      if (result.error) throw result.error;
+    }
     if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
 
-    const items = [
-      ...(messagesResult.data || []).map(item => ({ ...item, kind: 'chat' })),
-      ...(commentsResult.data || []).map(item => ({ ...item, kind: 'comment' }))
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+    const items = buildWorkspaceActivityItems({
+      messages: messagesResult.data || [],
+      comments: commentsResult.data || [],
+      tasks: tasksResult.data || [],
+      projects: projectsResult.data || [],
+      notes: notesResult.data || [],
+      resources: resourcesResult.data || [],
+      assignments, assignmentResources, submissions
+    }, 10);
     if (!items.length) {
       box.innerHTML = '<div class="empty">No group activity yet. Start with a shared task or say hello in chat.</div>';
       return;
     }
-    const profiles = await loadWorkspaceProfiles([...new Set(items.map(item => item.created_by))]);
+    const profiles = await loadWorkspaceProfiles([...new Set(items.map(item => item.actor_id).filter(Boolean))]);
     if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
-    const taskNames = new Map((tasksResult.data || []).map(task => [task.id, task.title]));
+    const marks = {
+      chat: '◌', comment: '↳', task: '✓', project: '▦',
+      note: '▤', resource: '↗', assignment: '▣',
+      'assignment-resource': '⌁', submission: '⇧'
+    };
     box.innerHTML = items.map(item => {
-      const actor = profiles.get(item.created_by) || (item.created_by === user.id ? prefs.displayName : '') || 'Member';
-      const context = item.kind === 'chat' ? 'posted in group chat' : 'commented on ' + (taskNames.get(item.task_id) || 'a shared task');
-      const preview = String(item.body || '').trim();
-      return '<article class="workspace-activity-item"><div class="workspace-activity-mark">' + (item.kind === 'chat' ? '◌' : '↳') + '</div><div class="workspace-activity-copy"><div class="workspace-activity-meta"><strong>' + esc(actor) + '</strong> ' + esc(context) + '<time>' + esc(new Date(item.created_at).toLocaleString()) + '</time></div><p>' + esc(preview.length > 180 ? preview.slice(0, 177) + '…' : preview) + '</p></div></article>';
+      const actor = profiles.get(item.actor_id) ||
+        (item.actor_id === user.id ? prefs.displayName : '') || 'Member';
+      const subject = item.subject ? '<strong>' + esc(item.subject) + '</strong>' : '';
+      const preview = String(item.preview || '').trim();
+      const detail = [subject, preview ? esc(preview.length > 180 ? preview.slice(0, 177) + '…' : preview) : '']
+        .filter(Boolean).join(' · ');
+      return '<article class="workspace-activity-item" data-activity-kind="' + esc(item.kind) + '">' +
+        '<div class="workspace-activity-mark">' + (marks[item.kind] || '•') + '</div>' +
+        '<div class="workspace-activity-copy"><div class="workspace-activity-meta"><strong>' +
+        esc(actor) + '</strong> ' + esc(item.context) + '<time>' +
+        esc(new Date(item.created_at).toLocaleString()) + '</time></div>' +
+        (detail ? '<p>' + detail + '</p>' : '') + '</div></article>';
     }).join('');
   } catch (error) {
     if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
-    box.innerHTML = '<div class="empty">Recent activity could not be loaded: ' + esc(error.message || 'Unknown error') + '</div>';
+    box.innerHTML = '<div class="empty">Recent activity could not be loaded: ' +
+      esc(error.message || 'Unknown error') + '</div>';
   }
 }
-
 async function loadWorkspaceHubMembers(w) {
   const sections = workspaceHubSections;
   const box = sections && sections.membersList;
