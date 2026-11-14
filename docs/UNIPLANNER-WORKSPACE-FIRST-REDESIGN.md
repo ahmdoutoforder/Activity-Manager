@@ -26,7 +26,7 @@
 
 - Reordered primary navigation around the workspace-first product hierarchy; legacy Grades/GPA, Faculty, Focus and Quick Notes pages remain in source but are not primary navigation.
 - Reframed the dashboard and Shared Study Workspaces page; the shared-workspace entry point now appears before personal task attention, and the dashboard uses attendance metrics instead of GPA/credits/assessment tracking.
-- Reworked the weekly timetable into day-grouped cards with clear time blocks and a current-day highlight.
+- Reworked the weekly timetable into day-grouped cards with clear time blocks and a current-day highlight; the dashboard also shows today's scheduled classes.
 - Added a workspace-home activity feed from the existing RLS-protected group chat and task-comment records.
 - Removed attendance displays and controls from the legacy Grades module so attendance is managed only in its independent section.
 - Added the obsidian/violet responsive shell and improved the workspace picker/content proportions.
