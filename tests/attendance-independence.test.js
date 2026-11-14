@@ -8,6 +8,10 @@ const subjectCardEnd = source.indexOf('function targetScoreText(g,target){', sub
 assert.ok(subjectCardStart >= 0 && subjectCardEnd > subjectCardStart, 'legacy grade card source must be present');
 const gradeCardSource = source.slice(subjectCardStart, subjectCardEnd);
 assert.doesNotMatch(gradeCardSource, /attStats|attendance/i, 'Grades UI must not render or manage attendance');
+const gradeSummaryStart = source.indexOf('function renderSemester(){');
+const gradeSummaryEnd = source.indexOf('function render(){', gradeSummaryStart);
+assert.ok(gradeSummaryStart >= 0 && gradeSummaryEnd > gradeSummaryStart, 'legacy grade summary source must be present');
+assert.doesNotMatch(source.slice(gradeSummaryStart, gradeSummaryEnd), /attendance/i, 'Grades summary must not calculate attendance');
 
 const required = [
   'd.attendanceCoursesInitialized',
