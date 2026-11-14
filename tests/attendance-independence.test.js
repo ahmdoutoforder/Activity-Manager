@@ -16,6 +16,11 @@ for (const marker of required) {
 }
 
 function runAttendance(data) {
+  data.grades = Array.isArray(data.grades) ? data.grades : [];
+  data.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+  data.assessments = Array.isArray(data.assessments) ? data.assessments : [];
+  data.semesterGoal = data.semesterGoal ?? 70;
+  data.attendanceMinimum = data.attendanceMinimum ?? 75;
   const nodes = {};
   for (const id of [
     'attendanceOverall','attendanceSessions','attendanceAtRisk',
