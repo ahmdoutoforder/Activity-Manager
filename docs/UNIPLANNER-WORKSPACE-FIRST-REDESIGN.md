@@ -25,8 +25,10 @@
 ## Current implementation in PR #51
 
 - Reordered primary navigation around the workspace-first product hierarchy; legacy Grades/GPA, Faculty, Focus and Quick Notes pages remain in source but are not primary navigation.
-- Reframed the dashboard and Shared Study Workspaces page; removed the GPA/credits/assessment summary from the dashboard in favor of attendance metrics.
+- Reframed the dashboard and Shared Study Workspaces page; the shared-workspace entry point now appears before personal task attention, and the dashboard uses attendance metrics instead of GPA/credits/assessment tracking.
+- Reworked the weekly timetable into day-grouped cards with clear time blocks and a current-day highlight.
 - Added a workspace-home activity feed from the existing RLS-protected group chat and task-comment records.
+- Removed attendance displays and controls from the legacy Grades module so attendance is managed only in its independent section.
 - Added the obsidian/violet responsive shell and improved the workspace picker/content proportions.
 - Added a separate attendanceCourses payload collection. Existing attendance records migrate in memory from existing grade courses while preserving their IDs; a one-time marker prevents removed attendance classes from being re-created.
 - Added separate Lecture and Lab types, and an attendance snapshot on the dashboard.
