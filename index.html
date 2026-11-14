@@ -1165,6 +1165,123 @@ const ASSIGNMENT_EXTENSION_MIMES = {
 };
 let workspaceAssignmentsRequest = 0;
 
+let workspaceStorageCleanupPromise = null;
+
+async function drainWorkspaceStorageCleanupJobs(){
+  if(!supa||!user||!user.id)return {completed:0,failed:0,total:0,skipped:true};
+  if(workspaceStorageCleanupPromise)return workspaceStorageCleanupPromise;
+
+  const run=(async()=>{
+    const {data:jobs,error:jobsError}=await supa
+      .from('uniplanner_workspace_storage_cleanup_jobs')
+      .select('id,workspace_id')
+      .order('created_at',{ascending:true})
+      .limit(10);
+
+    if(jobsError){
+      const message=String(jobsError.message||'');
+      const queueNotInstalled=jobsError.code==='42P01'||jobsError.code==='PGRST205'||
+        /could not find the table|relation .* does not exist/i.test(message);
+      if(queueNotInstalled)return {completed:0,failed:0,total:0,skipped:true};
+      throw jobsError;
+    }
+
+    const pending=jobs||[];
+    if(!pending.length)return {completed:0,failed:0,total:0};
+    const bucket=supa.storage.from(ASSIGNMENT_FILE_BUCKET);
+    let completed=0,failed=0,removedTotal=0;
+
+    for(const job of pending){
+      try{
+        const workspaceId=String(job.workspace_id||'');
+        if(!/^[0-9a-f-]{36}$/i.test(workspaceId))throw new Error('A cleanup job contains an invalid workspace ID.');
+
+        const visitedFolders=new Set();
+        const filePaths=[];
+        async function collectFiles(prefix){
+          if(visitedFolders.has(prefix))return;
+          visitedFolders.add(prefix);
+
+          for(let offset=0;;offset+=100){
+            const {data:entries,error:listError}=await bucket.list(prefix,{
+              limit:100,
+              offset,
+              sortBy:{column:'name',order:'asc'}
+            });
+            if(listError)throw listError;
+            const page=entries||[];
+
+            for(const entry of page){
+              if(!entry||typeof entry.name!=='string'||!entry.name)continue;
+              if(entry.name.includes('/')||entry.name.includes('\\'))throw new Error('Storage returned an unexpected folder entry.');
+              const fullPath=prefix+'/'+entry.name;
+
+              if(entry.id==null){
+                await collectFiles(fullPath);
+                continue;
+              }
+
+              const relative=fullPath.slice(workspaceId.length+1).split('/');
+              const isResource=relative.length===3&&relative[1]==='resources';
+              const isSubmission=relative.length===4&&relative[1]==='submissions';
+              if(!isResource&&!isSubmission)throw new Error('A file under this workspace has an unexpected path; the cleanup job was kept for review.');
+              filePaths.push(fullPath);
+              if(filePaths.length>200000)throw new Error('This workspace exceeds the safe automatic cleanup limit.');
+            }
+
+            if(page.length<100)break;
+          }
+        }
+
+        await collectFiles(workspaceId);
+        for(let offset=0;offset<filePaths.length;offset+=1000){
+          const {error:removeError}=await bucket.remove(filePaths.slice(offset,offset+1000));
+          if(removeError)throw removeError;
+          removedTotal+=Math.min(1000,filePaths.length-offset);
+        }
+
+        const {error:jobDeleteError}=await supa
+          .from('uniplanner_workspace_storage_cleanup_jobs')
+          .delete()
+          .eq('id',job.id)
+          .select('id');
+        if(jobDeleteError)throw jobDeleteError;
+        completed++;
+        console.info('UniPlanner storage cleanup completed',workspaceId,filePaths.length);
+      }catch(error){
+        failed++;
+        console.warn('UniPlanner storage cleanup remains queued',job.workspace_id,error);
+      }
+    }
+
+    return {completed,failed,total:pending.length,removed:removedTotal};
+  })();
+
+  workspaceStorageCleanupPromise=run;
+  try{return await run;}
+  finally{if(workspaceStorageCleanupPromise===run)workspaceStorageCleanupPromise=null;}
+}
+
+/* Resume queued cleanup after sign-in and whenever the workspace list is opened.
+   A cleanup failure never blocks access to the remaining workspace features. */
+const loadWorkspacesBeforeStorageCleanup=loadWorkspaces;
+loadWorkspaces=async function(...args){
+  if(supa&&user){
+    try{
+      const cleanup=await drainWorkspaceStorageCleanupJobs();
+      if(cleanup.failed){
+        toast('A deleted workspace still has stored files queued for cleanup. UniPlanner will retry when you open Shared Study Workspaces again.','error');
+      }else if(cleanup.completed){
+        toast('Stored files from a deleted workspace were cleaned up.');
+      }
+    }catch(error){
+      console.warn('UniPlanner could not process queued storage cleanup jobs',error);
+      toast('Stored-file cleanup could not finish yet. The cleanup job remains queued for another attempt.','error');
+    }
+  }
+  return loadWorkspacesBeforeStorageCleanup(...args);
+};
+
 function assignmentFileMime(file){
   const ext = String(file.name.split('.').pop() || '').toLowerCase();
   const reported = file.type || '';
@@ -1396,7 +1513,21 @@ async function renderWorkspaceAssignments(w,overview,extra){
       const table=kind==='resource'?'uniplanner_assignment_resources':'uniplanner_assignment_submissions';
       const inserted=await supa.from(table).insert(metadata);
       if(inserted.error){
-        await storage.remove([path]).catch(()=>{});
+        let cleanupError=null;
+        try{
+          const cleanup=await storage.remove([path]);
+          cleanupError=cleanup.error||null;
+        }catch(error){
+          cleanupError=error;
+        }
+        if(cleanupError){
+          throw new Error(
+            'The file details could not be saved ('+(inserted.error.message||'unknown database error')+
+            ') and automatic removal of the uploaded object also failed ('+
+            (cleanupError.message||'unknown Storage error')+'). The private file may remain stored at '+
+            path+'. Contact the workspace owner to have this orphaned upload removed.'
+          );
+        }
         throw inserted.error;
       }
     }
