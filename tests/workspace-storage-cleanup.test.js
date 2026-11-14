@@ -35,7 +35,7 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
       if (prefix === workspaceId) {
         return { data: [{ name: 'assignment-1', id: null }], error: null };
       }
-      if (prefix.startsWith('11111111-1111-4111-8111-') && prefix !== workspaceId) {
+      if (prefix.length === 36 && prefix.startsWith('11111111-1111-4111-8111-') && prefix !== workspaceId) {
         return { data: [], error: null };
       }
       if (prefix === workspaceId + '/assignment-1') {
