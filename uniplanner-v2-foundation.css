@@ -600,3 +600,16 @@ body {
   margin:6px 0 0; color:#c6bacf; font-size:11px;
   line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere;
 }
+
+/* Keep the dashboard hero accent violet rather than inheriting the legacy blue. */
+.dashboard-hero .eyebrow { color: #c29eff; }
+.dashboard-hero .eyebrow:before { background: #b48aff; }
+.dashboard-hero .hero-period { color: #c29eff; }
+.dashboard-hero .hero-actions .btn.primary {
+  background: linear-gradient(135deg,#c8a8ff,#a77bed);
+  color: #170e23;
+  border-color: #b48aff;
+  box-shadow: 0 8px 25px #9b69e53b;
+}
+.dashboard-hero .hero-actions .btn.primary:hover { filter:brightness(1.08); }
+.hero-bottomline b { color: #c29eff; }
