@@ -66,7 +66,7 @@ The test used temporary `storage.objects` metadata rows to exercise RLS policies
 - The client cleanup worker runs before the workspace list is loaded after sign-in/open. It reads only cleanup jobs visible to the current requester/admin, recursively lists the workspace prefix (100 entries per page), validates every object path against the assignment-resource/submission layout, removes files through the Storage API in batches of at most 1,000, and deletes the queue row only after all removals succeed. If listing/removal fails, or an unexpected object path is found, the row remains queued for a later retry. The worker does not use a service-role key and does not delete rows from `storage.objects` with SQL.
 - When an upload succeeds but its metadata insert fails, the client checks the returned Storage removal error instead of swallowing it. If that compensating removal also fails, the UI reports the error and exact private object path for owner cleanup. This one-off upload rollback is not a separate durable queue; the workspace-deletion queue handles the full workspace lifecycle.
 - Before production rollout, verify the cleanup worker against actual Storage API objects (not just `storage.objects` metadata rows) using an authenticated browser session.
-- Only after those checks should the same two migrations be reviewed for production application.
+- Only after those checks should the same four migrations be reviewed for production application.
 
 ## Security design notes
 
