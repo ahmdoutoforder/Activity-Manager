@@ -1,9 +1,9 @@
 # UniPlanner workspace-first redesign
 
-**Status:** In progress  
+**Status:** Active implementation  
 **Target:** Production repository ahmdoutoforder/Activity-Manager  
-**Working branch:** redesign/uniplanner-workspace-first-2026-11  
-**Pull request:** #51 (draft)
+**Baseline:** PR #51 merged to `main` on 2026-11-14  
+**Current phase:** Finish the workspace-first experience and final regression coverage
 
 ## Product hierarchy
 
@@ -27,7 +27,7 @@
 - Reordered primary navigation around the workspace-first product hierarchy; legacy Grades/GPA, Faculty, Focus and Quick Notes pages remain in source but are not primary navigation.
 - Reframed the dashboard and Shared Study Workspaces page; the shared-workspace entry point now appears before personal task attention, and the dashboard uses attendance metrics instead of GPA/credits/assessment tracking.
 - Reworked the weekly timetable into day-grouped cards with clear time blocks and a current-day highlight; the dashboard also shows today's scheduled classes.
-- Added a workspace-home activity feed from the existing RLS-protected group chat and task-comment records.
+- Added a workspace-home activity feed that brings together existing RLS-protected chat, task discussion, shared-task creation, projects, notes and resources, plus assignment and submission events when the optional assignment tables are present.
 - Removed attendance displays and controls from the legacy Grades module so attendance is managed only in its independent section.
 - Added the obsidian/violet responsive shell and improved the workspace picker/content proportions.
 - Added a separate attendanceCourses payload collection. Existing attendance records migrate in memory from existing grade courses while preserving their IDs; a one-time marker prevents removed attendance classes from being re-created.
@@ -50,5 +50,5 @@
 - External semester-upgrade.js syntax check: passed.
 - Attendance independence and approved-leave regression tests: passed.
 - Workspace Storage cleanup worker tests: passed.
-- Workspace activity feed is source-validated in CI.
+- Workspace activity feed now has dedicated regression coverage for aggregation, newest-first sorting, task-to-comment context, result limits, invalid timestamps and graceful handling when optional assignment tables are not installed.
 - No production Supabase migration or data change was made by this redesign branch.
