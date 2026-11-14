@@ -100,5 +100,33 @@ jobs:
             throw new Error('Missing closed-assignment submission policy safeguards');
           }
 
-          console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, and assignment/storage migration safeguards.`);
+          const cleanupWorkerMarkers = [
+            'async function drainWorkspaceStorageCleanupJobs',
+            "from('uniplanner_workspace_storage_cleanup_jobs')",
+            'bucket.list(prefix',
+            'bucket.remove(filePaths.slice',
+            'loadWorkspacesBeforeStorageCleanup',
+            'cleanupError=cleanup.error'
+          ];
+          for (const marker of cleanupWorkerMarkers) {
+            if (!html.includes(marker)) throw new Error(`Missing workspace Storage cleanup behavior: ${marker}`);
+          }
+
+          const cleanupMigration = fs.readFileSync('workspace-storage-cleanup-migration.sql', 'utf8').toLowerCase();
+          for (const marker of [
+            'create table if not exists public.uniplanner_workspace_storage_cleanup_jobs',
+            'after delete on public.uniplanner_workspaces',
+            'for select to authenticated',
+            'for delete to authenticated',
+            'requested_by = (select auth.uid())',
+            'on storage.objects for select',
+            'on storage.objects for delete'
+          ]) {
+            if (!cleanupMigration.includes(marker)) throw new Error(`Missing workspace cleanup migration safeguard: ${marker}`);
+          }
+
+          console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, assignment/storage safeguards, and workspace cleanup worker.`);
           NODE
+
+      - name: Test workspace Storage cleanup worker
+        run: node tests/workspace-storage-cleanup.test.js
