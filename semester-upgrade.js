@@ -18,7 +18,7 @@ function ensureData(){
  d.gradingScale={...defaults,...(d.gradingScale||{})};
  d.attendanceMinimum=Number.isFinite(Number(d.attendanceMinimum))?Math.max(0,Math.min(100,Number(d.attendanceMinimum))):75;
  d.semesterGoal=Number.isFinite(Number(d.semesterGoal))?Math.max(0,Math.min(100,Number(d.semesterGoal))):70;
- if(!d.attendanceCourses.length){
+ if(!d.attendanceCoursesInitialized){
   d.attendanceCourses=(d.grades||[]).map(g=>({id:g.id,name:g.course,type:'Lecture'}));
   d.attendance.forEach(a=>{
    if(!d.attendanceCourses.some(c=>c.id===a.subjectId)){
@@ -26,6 +26,7 @@ function ensureData(){
     if(!a.subjectId)a.subjectId=d.attendanceCourses[d.attendanceCourses.length-1].id;
    }
   });
+  d.attendanceCoursesInitialized=true;
  }
  d.attendanceCourses=d.attendanceCourses.map(c=>({...c,name:String(c.name||c.course||'').trim(),type:c.type==='Lab'?'Lab':'Lecture'})).filter(c=>c.id&&c.name);
  d.attendance.forEach(a=>{
