@@ -733,6 +733,55 @@ let workspaceHubSections = null;
 const showWorkspaceTabBeforeHub = showWorkspaceTab;
 const loadWorkspaceTasksBeforeHub = loadWorkspaceTasks;
 
+async function renderWorkspaceActivity(workspace, panel) {
+  const box = panel && panel.querySelector('#workspaceRecentActivityList');
+  if (!box || !supa || !user) return;
+  box.innerHTML = '<div class="empty">Loading recent activity…</div>';
+  try {
+    const [messagesResult, commentsResult, tasksResult] = await Promise.all([
+      supa.from('uniplanner_group_messages')
+        .select('id,created_by,body,created_at')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false })
+        .limit(8),
+      supa.from('uniplanner_task_comments')
+        .select('id,task_id,created_by,body,created_at')
+        .eq('workspace_id', workspace.id)
+        .order('created_at', { ascending: false })
+        .limit(8),
+      supa.from('uniplanner_shared_tasks')
+        .select('id,title')
+        .eq('workspace_id', workspace.id)
+        .limit(200)
+    ]);
+    if (messagesResult.error) throw messagesResult.error;
+    if (commentsResult.error) throw commentsResult.error;
+    if (tasksResult.error) throw tasksResult.error;
+    if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
+
+    const items = [
+      ...(messagesResult.data || []).map(item => ({ ...item, kind: 'chat' })),
+      ...(commentsResult.data || []).map(item => ({ ...item, kind: 'comment' }))
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+    if (!items.length) {
+      box.innerHTML = '<div class="empty">No group activity yet. Start with a shared task or say hello in chat.</div>';
+      return;
+    }
+    const profiles = await loadWorkspaceProfiles([...new Set(items.map(item => item.created_by))]);
+    if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
+    const taskNames = new Map((tasksResult.data || []).map(task => [task.id, task.title]));
+    box.innerHTML = items.map(item => {
+      const actor = profiles.get(item.created_by) || (item.created_by === user.id ? prefs.displayName : '') || 'Member';
+      const context = item.kind === 'chat' ? 'posted in group chat' : 'commented on ' + (taskNames.get(item.task_id) || 'a shared task');
+      const preview = String(item.body || '').trim();
+      return '<article class="workspace-activity-item"><div class="workspace-activity-mark">' + (item.kind === 'chat' ? '◌' : '↳') + '</div><div class="workspace-activity-copy"><div class="workspace-activity-meta"><strong>' + esc(actor) + '</strong> ' + esc(context) + '<time>' + esc(new Date(item.created_at).toLocaleString()) + '</time></div><p>' + esc(preview.length > 180 ? preview.slice(0, 177) + '…' : preview) + '</p></div></article>';
+    }).join('');
+  } catch (error) {
+    if (!workspaceHubSections || workspaceHubSections.workspaceId !== workspace.id) return;
+    box.innerHTML = '<div class="empty">Recent activity could not be loaded: ' + esc(error.message || 'Unknown error') + '</div>';
+  }
+}
+
 async function loadWorkspaceHubMembers(w) {
   const sections = workspaceHubSections;
   const box = sections && sections.membersList;
@@ -860,6 +909,13 @@ loadWorkspaceTasks = async function() {
     overview.querySelector('#deleteWorkspaceBtn')?.parentElement || null;
   const summary = overview.querySelector('.group-summary');
   const privacy = overview.querySelector('.small-label');
+  const activityPanel = makePanel('Recent activity', 'A quick view of the latest group conversations and task discussions.');
+  activityPanel.id = 'workspaceRecentActivity';
+  const activityList = document.createElement('div');
+  activityList.id = 'workspaceRecentActivityList';
+  activityList.className = 'task-list';
+  activityList.innerHTML = '<div class="empty">Loading recent activity…</div>';
+  activityPanel.appendChild(activityList);
 
   const intro = document.createElement('div');
   intro.className = 'panel workspace-hub-intro';
@@ -895,6 +951,7 @@ loadWorkspaceTasks = async function() {
   if (actionBar) overview.appendChild(actionBar);
   if (summary) overview.appendChild(summary);
   if (privacy) overview.appendChild(privacy);
+  overview.appendChild(activityPanel);
 
   tabs.dataset.hubVersion = '2';
   tabs.innerHTML = '<button class="btn" type="button" data-wtab="overview">Overview</button>' +
@@ -910,8 +967,9 @@ loadWorkspaceTasks = async function() {
   tabs.querySelectorAll('[data-wtab]').forEach(button => {
     button.onclick = () => showWorkspaceTab(button.dataset.wtab, w, overview, extra);
   });
-  workspaceHubSections = { workspaceId: w.id, tasks: tasksPanel, notes: notesPanel, discussion: discussionPanel, chat: chatPanel, members: membersPanel, membersList };
+  workspaceHubSections = { workspaceId: w.id, tasks: tasksPanel, notes: notesPanel, discussion: discussionPanel, chat: chatPanel, members: membersPanel, membersList, activity: activityPanel };
   await showWorkspaceTab(workspaceTab, w, overview, extra);
+  await renderWorkspaceActivity(w, activityPanel);
 };
 
 /* Project-linked tasks: a single shared-task record can belong to one project. */
