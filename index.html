@@ -453,13 +453,13 @@ a{ text-decoration-color:#a78bfa66 }
   <div id="todayAttention" class="attention-items" aria-live="polite"></div>
   <button class="btn attention-link" type="button" data-goto="tasks">Open task list <span aria-hidden="true">↗</span></button>
 </section>
-<div class="dashboard-priority-grid"><div class="columns"><div class="panel"><div class="panel-head"><div><h3>Upcoming tasks</h3><div class="sub">Your next steps, all in one place</div></div><button class="btn" data-goto="tasks">View all →</button></div><div class="task-list" id="dashTasks"></div><div class="assigned-workspace-preview"><div class="panel-head" style="margin-top:15px;margin-bottom:9px"><div><h3>Assigned to you</h3><div class="sub">Shared workspace tasks, not duplicate copies</div></div></div><div class="task-list" id="dashAssignedWorkspaceTasks"><div class="empty">Sign in to see tasks classmates assign to you.</div></div></div></div><div style="display:flex;flex-direction:column;gap:15px"><div class="panel"><div class="panel-head"><div><h3>Month at a glance</h3><div class="sub" id="dashMonthLabel">Your calendar</div></div><button class="btn" data-goto="calendar">Open →</button></div><div id="miniCalendar"></div></div><div class="panel"><div class="panel-head"><div><h3>Today&#39;s classes</h3><div class="sub">Your timetable for today</div></div><button class="btn" data-goto="timetable">View →</button></div><div id="dashboardTodayClasses" class="dashboard-today-classes"><div class="empty">Loading today&#39;s classes…</div></div></div><div class="panel"><div class="panel-head"><div><h3>Quick launch</h3><div class="sub">Jump back into your workflow</div></div></div><div class="quick"><button data-goto="attendance"><strong>✓ Record attendance</strong><span>Log a lecture or lab</span></button><button data-goto="tasks"><strong>☷ Add a deadline</strong><span>Keep your next task visible</span></button><button data-goto="timetable"><strong>◷ View timetable</strong><span>Check your weekly classes</span></button><button data-goto="settings"><strong>☁ Backup & sync</strong><span>Keep data safe</span></button></div></div></div></div></div>
+<div class="dashboard-priority-grid"><div class="columns"><div class="panel"><div class="panel-head"><div><h3>Upcoming tasks</h3><div class="sub">Your next steps, all in one place</div></div><button class="btn" data-goto="tasks">View all →</button></div><div class="task-list" id="dashTasks"></div><p class="sub" style="margin-top:12px">Personal tasks and assigned shared tasks appear together; shared tasks remain linked to their workspace.</p></div><div style="display:flex;flex-direction:column;gap:15px"><div class="panel"><div class="panel-head"><div><h3>Month at a glance</h3><div class="sub" id="dashMonthLabel">Your calendar</div></div><button class="btn" data-goto="calendar">Open →</button></div><div id="miniCalendar"></div></div><div class="panel"><div class="panel-head"><div><h3>Today&#39;s classes</h3><div class="sub">Your timetable for today</div></div><button class="btn" data-goto="timetable">View →</button></div><div id="dashboardTodayClasses" class="dashboard-today-classes"><div class="empty">Loading today&#39;s classes…</div></div></div><div class="panel"><div class="panel-head"><div><h3>Quick launch</h3><div class="sub">Jump back into your workflow</div></div></div><div class="quick"><button data-goto="attendance"><strong>✓ Record attendance</strong><span>Log a lecture or lab</span></button><button data-goto="tasks"><strong>☷ Add a deadline</strong><span>Keep your next task visible</span></button><button data-goto="timetable"><strong>◷ View timetable</strong><span>Check your weekly classes</span></button><button data-goto="settings"><strong>☁ Backup & sync</strong><span>Keep data safe</span></button></div></div></div></div></div>
 <div class="dashboard-section-head"><div><span class="section-kicker">AT A GLANCE</span><h3>Your progress</h3></div><span class="section-note">Small steps add up.</span></div>
 <div class="stats"><div class="stat"><div class="stat-head">Open tasks <span>☷</span></div><div class="stat-num" id="statOpen">0</div><div class="stat-foot">Ready for your attention</div></div><div class="stat"><div class="stat-head">Due today <span>◷</span></div><div class="stat-num" id="statToday">0</div><div class="stat-foot">Keep an eye on these</div></div><div class="stat"><div class="stat-head">Overdue <span style="color:var(--red)">!</span></div><div class="stat-num" id="statLate">0</div><div class="stat-foot">No repeated alert spam</div></div><div class="stat"><div class="stat-head">Completed <span style="color:var(--mint)">✓</span></div><div class="stat-num" id="statDone">0</div><div class="stat-foot" id="statDoneFoot">Progress adds up</div></div></div>
 <div class="dashboard-section-head attendance-heading"><div><span class="section-kicker">YOUR ROUTINE</span><h3>Attendance at a glance</h3><span class="section-note">Lectures and labs, tracked independently. Approved leave is excused.</span></div><button class="btn" data-goto="attendance">Open attendance →</button></div><div class="attendance-snapshot-grid"><div class="attendance-snapshot"><span>Overall attendance</span><strong id="dashboardAttendanceOverall">—</strong><small>Present ÷ counted sessions</small></div><div class="attendance-snapshot"><span>Classes tracked</span><strong id="dashboardAttendanceClasses">0</strong><small>Lectures and labs</small></div><div class="attendance-snapshot"><span>Sessions counted</span><strong id="dashboardAttendanceSessions">0</strong><small>Present or absent only</small></div><div class="attendance-snapshot"><span>Approved leave</span><strong id="dashboardApprovedLeave">0</strong><small>Not counted as absence</small></div></div><div class="dashboard-section-head momentum-heading"><div><span class="section-kicker">KEEP YOUR MOMENTUM</span><h3>The week ahead</h3></div><span class="section-note">A little progress, every day.</span></div><div class="insight-grid"><div class="insight"><div class="kicker">THIS WEEK</div><div class="value" id="weekDone">0 / 0</div><div class="detail" id="weekDetail">Completed tasks this week</div><div class="insight-bar"><span id="weekBar"></span></div></div><div class="insight"><div class="kicker">NEXT 7 DAYS</div><div class="value" id="nextDeadlines">0</div><div class="detail" id="deadlineDetail">Upcoming deadlines</div></div><div class="insight"><div class="kicker">SEMESTER MOMENTUM</div><div class="value" id="momentumValue">Ready</div><div class="detail" id="momentumDetail">Small steps add up</div></div></div>
 </section>
 <section class="page" id="page-calendar"><div class="welcome"><div><div class="eyebrow">PLAN AHEAD</div><h2>Your calendar.</h2><p>Choose a day to see its tasks or create a new one.</p></div><button class="btn primary" id="addCalendar">＋ Add task</button></div><div class="panel"><div class="panel-head"><div><h3 id="monthHeading">Calendar</h3><div class="sub">Deadlines are shown on their due dates.</div></div><div class="calendar-controls"><button class="iconbtn" id="prevMonth" aria-label="Previous month">←</button><button class="btn" id="todayBtn">Today</button><button class="iconbtn" id="nextMonth" aria-label="Next month">→</button></div></div><div id="fullCalendar"></div></div><div class="panel" style="margin-top:15px"><div class="panel-head"><div><h3 id="selectedDateTitle">Selected day</h3><div class="sub">Tasks for this date</div></div><button class="btn" id="addSelectedDate">＋ Add for this day</button></div><div id="selectedDayTasks" class="task-list"></div></div></section>
-<section class="page" id="page-tasks"><div class="welcome"><div><div class="eyebrow">STAY ON TOP OF IT</div><h2>Tasks & deadlines.</h2><p>One source of truth for your academic commitments.</p></div><button class="btn primary" id="addTasks">＋ Add task</button></div><div class="planning-summary" id="planningSummary" aria-label="Task workload summary"></div><div class="panel"><div class="row task-toolbar" style="margin-bottom:15px"><input class="search" id="taskSearch" placeholder="Search title, course, or details…" aria-label="Search tasks" style="flex:1;min-width:180px"><select id="taskFilter" class="search" aria-label="Filter tasks" style="width:auto;min-width:145px"><option value="all">All tasks</option><option value="open">Open</option><option value="today">Due today</option><option value="overdue">Overdue</option><option value="next7">Next 7 days</option><option value="priority-high">High priority</option><option value="done">Completed</option></select><select id="categoryFilter" class="search" aria-label="Filter by category" style="width:auto;min-width:130px"><option value="all">All categories</option><option>Quiz</option><option>Assignment</option><option>Group</option><option>Presentation</option><option>Exam</option><option>Other</option></select><select id="taskSort" class="search" aria-label="Sort tasks" style="width:auto;min-width:140px"><option value="date">Sort: Due date</option><option value="priority">Sort: Priority</option><option value="course">Sort: Course</option></select></div><div id="allTasks" class="task-list"></div></div><div class="panel assigned-workspace-panel" id="assignedWorkspaceTasksPanel" style="margin-top:15px"><div class="panel-head"><div><h3>Assigned from workspaces</h3><div class="sub">Tasks assigned to you by classmates appear here as the same shared task.</div></div></div><div id="assignedWorkspaceTasksList" class="task-list"><div class="empty">Sign in to see your assigned workspace tasks.</div></div></div></section>
+<section class="page" id="page-tasks"><div class="welcome"><div><div class="eyebrow">STAY ON TOP OF IT</div><h2>Tasks & deadlines.</h2><p>Personal tasks and shared tasks assigned to you, together in one place.</p></div><button class="btn primary" id="addTasks">＋ Add task</button></div><div class="planning-summary" id="planningSummary" aria-label="Task workload summary"></div><div class="panel"><div class="row task-toolbar" style="margin-bottom:15px"><input class="search" id="taskSearch" placeholder="Search title, course, or details…" aria-label="Search tasks" style="flex:1;min-width:180px"><select id="taskFilter" class="search" aria-label="Filter tasks" style="width:auto;min-width:145px"><option value="all">All tasks</option><option value="open">Open</option><option value="today">Due today</option><option value="overdue">Overdue</option><option value="next7">Next 7 days</option><option value="priority-high">High priority</option><option value="done">Completed</option></select><select id="categoryFilter" class="search" aria-label="Filter by category" style="width:auto;min-width:130px"><option value="all">All categories</option><option>Quiz</option><option>Assignment</option><option>Group</option><option>Presentation</option><option>Exam</option><option>Other</option></select><select id="taskSort" class="search" aria-label="Sort tasks" style="width:auto;min-width:140px"><option value="date">Sort: Due date</option><option value="priority">Sort: Priority</option><option value="course">Sort: Course</option></select></div><div id="allTasks" class="task-list"></div></div></section>
 <section class="page" id="page-timetable"><div class="welcome"><div><div class="eyebrow">WEEKLY RHYTHM</div><h2>Timetable.</h2><p>Keep your class schedule easy to find.</p></div><button class="btn primary" id="addClass">＋ Add class</button></div><div class="panel"><div class="panel-head"><div><h3>Your weekly schedule</h3><div class="sub">Times are displayed in your local timezone.</div></div></div><div id="timetableList" class="task-list"></div></div></section>
 <section class="page" id="page-grades"><div class="welcome"><div><div class="eyebrow">ACADEMIC PROGRESS</div><h2>Grades & GPA.</h2><p>Use your university's grading scale for accurate results.</p></div><button class="btn primary" id="addGrade">＋ Add course</button></div><div class="stats"><div class="stat"><div class="stat-head">Courses</div><div class="stat-num" id="gradeCount">0</div><div class="stat-foot">Courses tracked</div></div><div class="stat"><div class="stat-head">Credit hours</div><div class="stat-num" id="creditCount">0</div><div class="stat-foot">Total credits entered</div></div><div class="stat"><div class="stat-head">Estimated GPA</div><div class="stat-num" id="gpaValue">—</div><div class="stat-foot">Weighted by credit hours</div></div><div class="stat"><div class="stat-head">Scale</div><div class="stat-num">4.0</div><div class="stat-foot">Editable course grade points</div></div></div><div class="panel"><div class="panel-head"><div><h3>Course results</h3><div class="sub">Enter the grade points from your university's official scale.</div></div></div><div id="gradesList" class="task-list"></div></div></section>
 <section class="page" id="page-attendance"><div class="welcome"><div><div class="eyebrow">SHOW UP CONSISTENTLY</div><h2>Attendance.</h2><p>Track lectures and labs independently from grades. Approved leave does not count as an absence.</p></div><button class="btn primary" id="addAttendance" type="button">＋ Add / edit session</button></div><div class="stats"><div class="stat"><div class="stat-head">Overall attendance</div><div class="stat-num" id="attendanceOverall">—</div><div class="stat-foot">Across recorded classes</div></div><div class="stat"><div class="stat-head">Sessions recorded</div><div class="stat-num" id="attendanceSessions">0</div><div class="stat-foot">Present or absent only · approved leave excluded</div></div><div class="stat"><div class="stat-head">Subjects at risk</div><div class="stat-num" id="attendanceAtRisk">0</div><div class="stat-foot">Below or near the threshold</div></div><div class="stat"><div class="stat-head">Minimum target</div><div class="stat-num" id="attendanceThreshold">75%</div><div class="stat-foot">Default policy setting</div></div></div><div class="panel"><div class="panel-head"><div><h3>Record today's classes</h3><div class="sub">A second tap for the same subject and date updates the record rather than duplicating it.</div></div></div><div id="attendanceQuickList" class="task-list"></div></div><div class="panel" style="margin-top:15px"><div class="panel-head"><div><h3>Attendance history</h3><div class="sub">Edit a record to correct its date, subject or status.</div></div></div><div id="attendanceHistory" class="task-list"></div></div></section>
@@ -483,7 +483,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const blank=()=>({schema:SCHEMA,tasks:[],classes:[],grades:[],assessments:[],attendance:[],gradingScale:{aMin:90,bMin:80,cMin:70,dMin:60,aPoints:4,bPoints:3,cPoints:2,dPoints:1},attendanceMinimum:75,semesterGoal:70,faculty:[],notes:[],scratchpad:'',focusSessions:0,reminded:[]});
 const FIRST_SEMESTER_SUBJECTS=[{course:'Programming Fundamentals',credits:4,theory:3,practical:1},{course:'Application of Information & Communication Technologies',credits:3,theory:2,practical:1},{course:'Functional English',credits:3,theory:3,practical:0},{course:'Islamic Studies',credits:2,theory:2,practical:0},{course:'Applied Physics',credits:3,theory:2,practical:1},{course:'Ideology and Constitution of Pakistan',credits:2,theory:2,practical:0}];
 function ensureFirstSemesterSubjects(){if(data.firstSemesterSubjectsVersion>=1)return;for(const subject of FIRST_SEMESTER_SUBJECTS){if(!data.grades.some(g=>(g.course||'').trim().toLowerCase()===subject.course.toLowerCase()))data.grades.push({id:uid(),course:subject.course,credits:subject.credits,points:'',letter:'',semester:1,createdAt:new Date().toISOString()})}data.firstSemesterSubjectsVersion=1;}
-let workspaceLoadSeq=0,data=blank(),prefs={reminderMode:'off',reminderLeadMinutes:30,overdueAlerts:false,groupNotifications:false,displayName:'',supabaseUrl:SUPABASE_URL,supabaseKey:SUPABASE_KEY},activeWorkspaceId=null,workspaces=[],month=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=today(),editing=null,modalType='',timer=null,remaining=1500,mode='focus',started=false,supa=null,user=null,accessGranted=false,accessCheckBusy=false;
+let workspaceLoadSeq=0,data=blank(),prefs={reminderMode:'off',reminderLeadMinutes:30,overdueAlerts:false,groupNotifications:false,displayName:'',supabaseUrl:SUPABASE_URL,supabaseKey:SUPABASE_KEY},activeWorkspaceId=null,workspaces=[],month=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=today(),editing=null,modalType='',timer=null,remaining=1500,mode='focus',started=false,supa=null,user=null,accessGranted=false,accessCheckBusy=false,assignedWorkspaceTaskRequest=0,assignedWorkspaceTasksCache=[];
 function toast(msg,type='ok'){const n=document.createElement('div');n.className='toast '+(type==='error'?'error':'ok');n.textContent=msg;$('toastbox').append(n);setTimeout(()=>n.remove(),3800)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem('uniplanner_v2_updated',String(Date.now()));$('saveStatus').innerHTML='<i class="dot"></i> Saved on this device';}catch(e){$('saveStatus').textContent='Save failed — export a backup';toast('Could not save locally. Export a backup and check browser storage settings.','error');console.error(e)}scheduleReminderCheck();renderStats();renderTasks();renderCalendars();renderClasses();renderGrades();renderFaculty();renderNotes();window.UniPlannerSemester?.render();scheduleCloudPush()}
 function persistPrefsFromForm(){prefs.reminderMode=$('reminderMode').value;prefs.reminderLeadMinutes=Math.max(10,Math.min(1440,Number($('reminderLeadMinutes')?.value)||30));prefs.overdueAlerts=!!$('overdueAlerts')?.checked;prefs.groupNotifications=!!$('groupNotifications')?.checked;prefs.displayName=$('displayName').value.trim();prefs.supabaseUrl=SUPABASE_URL;prefs.supabaseKey=SUPABASE_KEY;$('supabaseUrl').value=SUPABASE_URL;$('supabaseKey').value=SUPABASE_KEY;try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch{}scheduleReminderCheck()}
@@ -502,95 +502,238 @@ function closeModal(){$('modalWrap').classList.remove('open');editing=null;modal
 $('modalClose').onclick=closeModal;$('modalCancel').onclick=closeModal;$('modalWrap').addEventListener('click',e=>{if(e.target===$('modalWrap'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('taskSearch').focus()}});
 $('itemForm').addEventListener('submit',e=>{e.preventDefault();const obj=Object.fromEntries(new FormData(e.currentTarget));const type=modalType;for(const k of ['credits','points'])if(obj[k]!==undefined)obj[k]=obj[k]===''?'':Number(obj[k]);if(type==='task'){if(!obj.title.trim()||!obj.date){toast('Add a title and due date.','error');return}obj.completed=editing?(data.tasks.find(x=>x.id===editing)?.completed||false):false;obj.createdAt=editing?(data.tasks.find(x=>x.id===editing)?.createdAt||new Date().toISOString()):new Date().toISOString();}const collection={task:'tasks',class:'classes',grade:'grades',faculty:'faculty',note:'notes'}[type];if(editing){const i=data[collection].findIndex(x=>x.id===editing);if(i>=0)data[collection][i]={...data[collection][i],...obj,updatedAt:new Date().toISOString()}}else data[collection].push({id:uid(),...obj,createdAt:new Date().toISOString()});closeModal();save();toast(type==='task'?'Task saved.': 'Saved successfully.');if(type==='task')switchPage('tasks')});
 function taskStatus(t){if(t.completed)return'done';if(t.date<today())return'overdue';if(t.date===today())return'today';return'open'}
-function taskCard(t){const status=taskStatus(t);return '<div class="task '+(t.completed?'completed':'')+'"><input class="check" type="checkbox" data-complete="'+esc(t.id)+'" '+(t.completed?'checked':'')+' aria-label="Mark '+esc(t.title)+' complete"><div class="task-main"><div class="task-title">'+esc(t.title)+'</div><div class="task-meta"><span>◷ '+esc(t.date)+(t.time?' · '+esc(t.time):'')+'</span><span class="tag '+esc((t.priority||'medium').toLowerCase())+'">'+esc(t.priority||'Medium')+'</span><span class="tag">'+esc(t.category||'Other')+'</span>'+(t.course?'<span>'+esc(t.course)+'</span>':'')+(status==='overdue'?'<span style="color:var(--red)">Overdue</span>':'')+'</div>'+(t.description?'<div class="sub">'+esc(t.description)+'</div>':'')+'</div><div class="task-actions"><button class="mini" data-edit-task="'+esc(t.id)+'" aria-label="Edit task">✎</button><button class="mini" data-delete-task="'+esc(t.id)+'" aria-label="Delete task">✕</button></div></div>'}
-function renderTaskInto(el,items,empty){el.innerHTML=items.length?items.map(taskCard).join(''):'<div class="empty"><div class="big">✧</div>'+empty+'</div>'}
 
-function assignedWorkspaceTaskCard(task){
- const workspace=workspaces.find(item=>item.id===task.workspace_id);
- const workspaceName=workspace?.name||'Shared workspace';
- const source=task.project_id?'Project task':'Workspace task';
- return '<div class="task '+(task.completed?'completed':'')+'"><input class="check" type="checkbox" data-assigned-workspace-task="'+esc(task.id)+'" '+(task.completed?'checked':'')+' aria-label="Mark '+esc(task.title)+' complete"><div class="task-main"><div class="task-title">'+esc(task.title)+'</div><div class="task-meta"><span>◷ '+esc(task.due_date)+'</span><span class="tag">'+esc(source)+'</span><span class="tag">'+esc(workspaceName)+'</span></div>'+(task.description?'<div class="sub">'+esc(task.description)+'</div>':'')+'</div></div>';
+function combinePlannerTasks(personalTasks, sharedTasks) {
+ const personal=(personalTasks||[]).map(task=>({...task,plannerSource:'personal'}));
+ const assigned=(sharedTasks||[]).map(task=>({
+  ...task,
+  date:task.due_date||'',
+  time:task.time||'',
+  category:task.category||'Assignment',
+  priority:task.priority||'Medium',
+  plannerSource:'workspace'
+ }));
+ return [...personal,...assigned];
 }
-let assignedWorkspaceTaskRequest=0;
+function plannerTasks(){return combinePlannerTasks(data.tasks,assignedWorkspaceTasksCache)}
+function plannerTaskWorkspaceName(task){
+ return workspaces.find(item=>item.id===task.workspace_id)?.name||'Shared workspace';
+}
+function plannerTaskCard(task){
+ if(task.plannerSource!=='workspace')return taskCard(task);
+ const status=taskStatus(task),workspaceName=plannerTaskWorkspaceName(task);
+ return '<div class="task '+(task.completed?'completed':'')+'" data-task-source="workspace">'+
+  '<input class="check" type="checkbox" data-assigned-workspace-task="'+esc(task.id)+'" '+(task.completed?'checked':'')+
+  ' aria-label="Mark '+esc(task.title)+' complete">'+
+  '<div class="task-main"><div class="task-title">'+esc(task.title)+'</div><div class="task-meta">'+
+  '<span>◷ '+(task.date?esc(task.date):'No due date')+(task.time?' · '+esc(task.time):'')+'</span>'+
+  '<span class="tag">Shared · '+esc(workspaceName)+'</span>'+
+  (task.project_id?'<span class="tag">Project task</span>':'')+
+  '<span class="tag">'+esc(task.category||'Assignment')+'</span>'+
+  '<span class="tag '+esc((task.priority||'Medium').toLowerCase())+'">'+esc(task.priority||'Medium')+'</span>'+
+  (status==='overdue'?'<span style="color:var(--red)">Overdue</span>':'')+
+  '</div>'+(task.description?'<div class="sub">'+esc(task.description)+'</div>':'')+
+  '</div><div class="task-actions"><button class="mini" type="button" data-open-assigned-workspace="'+esc(task.workspace_id)+'" aria-label="Open shared workspace">↗</button></div></div>';
+}
+function renderTaskInto(el,items,empty,renderCard=plannerTaskCard){
+ if(!el)return;
+ el.innerHTML=items.length?items.map(renderCard).join(''):'<div class="empty"><div class="big">✧</div>'+empty+'</div>';
+}
+
+function bindAssignedWorkspaceTaskControls(){
+ document.querySelectorAll('[data-assigned-workspace-task]').forEach(checkbox=>{
+  checkbox.onchange=async()=>{
+   const task=assignedWorkspaceTasksCache.find(item=>item.id===checkbox.dataset.assignedWorkspaceTask);
+   if(!task)return;
+   const next=checkbox.checked;
+   checkbox.disabled=true;
+   try{
+    const {error}=await supa.from('uniplanner_shared_tasks')
+     .update({completed:next,updated_at:new Date().toISOString()})
+     .eq('id',task.id).eq('assigned_to',user.id).eq('workspace_id',task.workspace_id);
+    if(error)throw error;
+    task.completed=next;
+    toast(next?'Shared task completed.':'Shared task reopened.');
+    await renderAssignedWorkspaceTasks();
+    if(activeWorkspaceId===task.workspace_id)await loadWorkspaceTasks();
+   }catch(error){
+    checkbox.checked=!next;
+    checkbox.disabled=false;
+    toast('Could not update shared task: '+(error.message||'Unknown error'),'error');
+   }
+  };
+ });
+ document.querySelectorAll('[data-open-assigned-workspace]').forEach(button=>{
+  button.onclick=()=>{
+   const workspaceId=button.dataset.openAssignedWorkspace;
+   if(!workspaces.some(item=>item.id===workspaceId)){
+    toast('This workspace is no longer available to your account.','error');
+    return;
+   }
+   activeWorkspaceId=workspaceId;
+   renderWorkspaceList();
+   switchPage('collaborate');
+   void loadWorkspaceTasks();
+  };
+ });
+}
+
 async function renderAssignedWorkspaceTasks(){
- const list=$('assignedWorkspaceTasksList'),dashboard=$('dashAssignedWorkspaceTasks');
- if(!list&&!dashboard)return;
  const request=++assignedWorkspaceTaskRequest;
  if(!supa||!user||!accessGranted){
-  const message=!user?'Sign in to see tasks classmates assign to you.':'Your account needs approved access to view shared workspace tasks.';
-  if(list)list.innerHTML='<div class="empty">'+esc(message)+'</div>';
-  if(dashboard)dashboard.innerHTML='<div class="empty">'+esc(message)+'</div>';
+  assignedWorkspaceTasksCache=[];
+  renderStats();renderTasks();renderCalendars();
   return;
  }
- if(list)list.innerHTML='<div class="empty">Loading assigned workspace tasks…</div>';
- if(dashboard)dashboard.innerHTML='<div class="empty">Loading…</div>';
  try{
   const {data:rows,error}=await supa.from('uniplanner_shared_tasks')
-   .select('id,workspace_id,project_id,title,description,due_date,completed,created_by,assigned_to')
+   .select('id,workspace_id,project_id,title,description,due_date,category,priority,completed,created_by,assigned_to')
    .eq('assigned_to',user.id)
    .order('completed',{ascending:true})
    .order('due_date',{ascending:true})
    .limit(150);
   if(error)throw error;
   if(request!==assignedWorkspaceTaskRequest)return;
-  const tasks=rows||[];
-  const active=tasks.filter(task=>!task.completed);
-  const completed=tasks.filter(task=>task.completed);
-  if(list){
-   list.innerHTML=(active.length?active.map(assignedWorkspaceTaskCard).join(''):'<div class="empty">No open workspace tasks are assigned to you.</div>')+
-    (completed.length?'<details class="assigned-workspace-completed"><summary>Completed workspace tasks ('+completed.length+')</summary><div class="task-list" style="margin-top:10px">'+completed.map(assignedWorkspaceTaskCard).join('')+'</div></details>':'');
-  }
-  if(dashboard){
-   const preview=active.slice(0,4);
-   dashboard.innerHTML=preview.length?preview.map(assignedWorkspaceTaskCard).join(''):'<div class="empty">No open workspace tasks assigned to you.</div>';
-   if(active.length>4)dashboard.insertAdjacentHTML('beforeend','<button type="button" class="btn" data-open-assigned-workspace-tasks>View all '+active.length+' assigned tasks →</button>');
-   dashboard.querySelector('[data-open-assigned-workspace-tasks]')?.addEventListener('click',()=>switchPage('tasks'));
-  }
-  document.querySelectorAll('[data-assigned-workspace-task]').forEach(checkbox=>{
-   checkbox.onchange=async()=>{
-    const task=tasks.find(item=>item.id===checkbox.dataset.assignedWorkspaceTask);
-    if(!task)return;
-    const next=checkbox.checked;
-    checkbox.disabled=true;
-    try{
-     const {error}=await supa.from('uniplanner_shared_tasks')
-      .update({completed:next,updated_at:new Date().toISOString()})
-      .eq('id',task.id)
-      .eq('assigned_to',user.id)
-      .eq('workspace_id',task.workspace_id);
-     if(error)throw error;
-     task.completed=next;
-     toast(next?'Shared task completed.':'Shared task reopened.');
-     await renderAssignedWorkspaceTasks();
-     if(activeWorkspaceId===task.workspace_id)await loadWorkspaceTasks();
-    }catch(error){
-     checkbox.checked=!next;
-     checkbox.disabled=false;
-     toast('Could not update shared task: '+(error.message||'Unknown error'),'error');
-    }
-   };
-  });
+  assignedWorkspaceTasksCache=rows||[];
+  renderStats();renderTasks();renderCalendars();
  }catch(error){
   if(request!==assignedWorkspaceTaskRequest)return;
-  const message='Could not load assigned workspace tasks: '+(error.message||'Unknown error');
-  if(list)list.innerHTML='<div class="empty">'+esc(message)+'</div>';
-  if(dashboard)dashboard.innerHTML='<div class="empty">'+esc(message)+'</div>';
+  console.error('Could not load assigned workspace tasks',error);
+  toast('Could not refresh tasks assigned from workspaces: '+(error.message||'Unknown error'),'error');
  }
 }
 
-function renderTasks(){const sortMode=$('taskSort')?.value||'date';const priorityRank=t=>({High:0,Medium:1,Low:2}[t.priority]??3);const compare=(a,b)=>{if(a.completed!==b.completed)return Number(a.completed)-Number(b.completed);if(sortMode==='priority')return priorityRank(a)-priorityRank(b)||a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'');if(sortMode==='course')return (a.course||'').localeCompare(b.course||'')||a.date.localeCompare(b.date);return a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')||priorityRank(a)-priorityRank(b)};const sorted=[...data.tasks].sort(compare);renderTaskInto($('dashTasks'),[...data.tasks].sort((a,b)=>Number(a.completed)-Number(b.completed)||a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).filter(t=>!t.completed).slice(0,5),'You are all caught up. Add a task when you are ready.');const q=($('taskSearch').value||'').trim().toLowerCase(),f=$('taskFilter').value,c=$('categoryFilter').value;const horizon=localDate(new Date(Date.now()+7*86400000));const active=data.tasks.filter(t=>!t.completed);const dueToday=active.filter(t=>t.date===today()).length,overdue=active.filter(t=>t.date<today()).length,nextSeven=active.filter(t=>t.date>=today()&&t.date<=horizon).length;const summaries=[['Open',active.length,'open'],['Overdue',overdue,'overdue'],['Due today',dueToday,'today'],['Next 7 days',nextSeven,'next7']];$('planningSummary').innerHTML=summaries.map(([label,count,filter])=>'<button type="button" class="planning-stat '+(f===filter?'selected':'')+'" data-task-shortcut="'+filter+'" aria-pressed="'+(f===filter)+'"><span>'+label+'</span><strong>'+count+'</strong></button>').join('');const list=sorted.filter(t=>(!q||[t.title,t.course,t.description,t.category].join(' ').toLowerCase().includes(q))&&(f==='all'||(f==='open'?!t.completed:f==='done'?t.completed:f==='priority-high'?!t.completed&&t.priority==='High':f==='next7'?!t.completed&&t.date>=today()&&t.date<=horizon:taskStatus(t)===f))&&(c==='all'||t.category===c));renderTaskInto($('allTasks'),list,'No tasks match these filters.');$('planningSummary').querySelectorAll('[data-task-shortcut]').forEach(b=>b.onclick=()=>{$('taskFilter').value=b.dataset.taskShortcut;switchPage('tasks');renderTasks()});renderTaskInto($('selectedDayTasks'),sorted.filter(t=>t.date===selectedDate),'Nothing scheduled for this day.');$('selectedDateTitle').textContent=new Date(selectedDate+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});document.querySelectorAll('[data-complete]').forEach(el=>el.onchange=()=>{const t=data.tasks.find(x=>x.id===el.dataset.complete);if(t){t.completed=el.checked;t.completedAt=t.completed?new Date().toISOString():null;if(t.completed)data.reminded=(data.reminded||[]).filter(id=>id!==t.id);save();toast(t.completed?'Task completed. Nice work.':'Task reopened.')}});document.querySelectorAll('[data-edit-task]').forEach(el=>el.onclick=()=>openModal('task',el.dataset.editTask));document.querySelectorAll('[data-delete-task]').forEach(el=>el.onclick=()=>{const t=data.tasks.find(x=>x.id===el.dataset.deleteTask);if(t&&confirm('Delete “'+t.title+'”? This cannot be undone.')){data.tasks=data.tasks.filter(x=>x.id!==t.id);data.reminded=(data.reminded||[]).filter(id=>id!==t.id);save();toast('Task deleted.')}})}
+function renderTasks(){
+ const tasks=plannerTasks();
+ const sortMode=$('taskSort')?.value||'date';
+ const priorityRank=task=>({High:0,Medium:1,Low:2}[task.priority]??3);
+ const compare=(a,b)=>{
+  if(a.completed!==b.completed)return Number(a.completed)-Number(b.completed);
+  if(sortMode==='priority')return priorityRank(a)-priorityRank(b)||a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'');
+  if(sortMode==='course')return (a.course|| (a.plannerSource==='workspace'?plannerTaskWorkspaceName(a):'')).localeCompare(b.course|| (b.plannerSource==='workspace'?plannerTaskWorkspaceName(b):''))||a.date.localeCompare(b.date);
+  return a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')||priorityRank(a)-priorityRank(b);
+ };
+ const sorted=[...tasks].sort(compare);
+ renderTaskInto($('dashTasks'),sorted.filter(task=>!task.completed).slice(0,5),'You are all caught up. Add a task when you are ready.');
+ const query=($('taskSearch')?.value||'').trim().toLowerCase();
+ const filter=$('taskFilter')?.value||'all';
+ const category=$('categoryFilter')?.value||'all';
+ const horizon=localDate(new Date(Date.now()+7*86400000));
+ const active=tasks.filter(task=>!task.completed);
+ const dueToday=active.filter(task=>task.date===today()).length;
+ const overdue=active.filter(task=>task.date<today()).length;
+ const nextSeven=active.filter(task=>task.date>=today()&&task.date<=horizon).length;
+ const summaries=[['Open',active.length,'open'],['Overdue',overdue,'overdue'],['Due today',dueToday,'today'],['Next 7 days',nextSeven,'next7']];
+ $('planningSummary').innerHTML=summaries.map(([label,count,key])=>'<button type="button" class="planning-stat '+(filter===key?'selected':'')+'" data-task-shortcut="'+key+'" aria-pressed="'+(filter===key)+'"><span>'+label+'</span><strong>'+count+'</strong></button>').join('');
+ const matches=sorted.filter(task=>{
+  const searchable=[task.title,task.course,task.description,task.category,task.plannerSource==='workspace'?plannerTaskWorkspaceName(task):''].join(' ').toLowerCase();
+  const matchesQuery=!query||searchable.includes(query);
+  const matchesFilter=filter==='all'||(filter==='open'?!task.completed:filter==='done'?task.completed:filter==='priority-high'?!task.completed&&task.priority==='High':filter==='next7'?!task.completed&&task.date>=today()&&task.date<=horizon:taskStatus(task)===filter);
+  return matchesQuery&&matchesFilter&&(category==='all'||task.category===category);
+ });
+ renderTaskInto($('allTasks'),matches,'No tasks match these filters.');
+ $('planningSummary').querySelectorAll('[data-task-shortcut]').forEach(button=>button.onclick=()=>{
+  $('taskFilter').value=button.dataset.taskShortcut;
+  switchPage('tasks');renderTasks();
+ });
+ renderTaskInto($('selectedDayTasks'),sorted.filter(task=>task.date===selectedDate),'Nothing scheduled for this day.');
+ $('selectedDateTitle').textContent=new Date(selectedDate+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+ document.querySelectorAll('[data-complete]').forEach(element=>element.onchange=()=>{
+  const task=data.tasks.find(item=>item.id===element.dataset.complete);
+  if(task){
+   task.completed=element.checked;
+   task.completedAt=task.completed?new Date().toISOString():null;
+   if(task.completed)data.reminded=(data.reminded||[]).filter(id=>id!==task.id);
+   save();toast(task.completed?'Task completed. Nice work.':'Task reopened.');
+  }
+ });
+ document.querySelectorAll('[data-edit-task]').forEach(element=>element.onclick=()=>openModal('task',element.dataset.editTask));
+ document.querySelectorAll('[data-delete-task]').forEach(element=>element.onclick=()=>{
+  const task=data.tasks.find(item=>item.id===element.dataset.deleteTask);
+  if(task&&confirm('Delete “'+task.title+'”? This cannot be undone.')){
+   data.tasks=data.tasks.filter(item=>item.id!==task.id);
+   data.reminded=(data.reminded||[]).filter(id=>id!==task.id);
+   save();toast('Task deleted.');
+  }
+ });
+ bindAssignedWorkspaceTaskControls();
+}
+
 function renderAttentionPlan(){
  const box=$('todayAttention'),summary=$('attentionSummary');if(!box||!summary)return;
- const active=data.tasks.filter(t=>!t.completed&&t.date);
+ const tasks=plannerTasks();
+ const active=tasks.filter(task=>!task.completed&&task.date);
  const todayKey=today();
- const rank=t=>t.date<todayKey?0:t.date===todayKey?1:2;
- const chosen=active.filter(t=>t.date<=localDate(new Date(Date.now()+7*86400000))).sort((a,b)=>rank(a)-rank(b)||(a.priority==='High'?-1:0)-(b.priority==='High'?-1:0)||a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).slice(0,2);
- const overdue=active.filter(t=>t.date<todayKey).length,due=active.filter(t=>t.date===todayKey).length;
+ const rank=task=>task.date<todayKey?0:task.date===todayKey?1:2;
+ const chosen=active.filter(task=>task.date<=localDate(new Date(Date.now()+7*86400000)))
+  .sort((a,b)=>rank(a)-rank(b)||(a.priority==='High'?-1:0)-(b.priority==='High'?-1:0)||a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).slice(0,2);
+ const overdue=active.filter(task=>task.date<todayKey).length,due=active.filter(task=>task.date===todayKey).length;
  summary.textContent=overdue?overdue+' overdue · '+due+' due today. Start with the oldest commitment.':due?due+' task'+(due===1?'':'s')+' due today. Here are your next steps.':'No overdue tasks. Keep an eye on what’s coming next.';
- box.innerHTML=chosen.length?chosen.map(t=>{const kind=t.date<todayKey?'urgent':t.date===todayKey?'due':'';const label=t.date<todayKey?'Overdue':t.date===todayKey?'Due today':new Date(t.date+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});return '<div class="attention-item '+kind+'"><i class="attention-marker" aria-hidden="true"></i><div><strong>'+esc(t.title)+'</strong><span>'+label+(t.course?' · '+esc(t.course):'')+(t.priority?' · '+esc(t.priority)+' priority':'')+'</span></div></div>'}).join(''):'<div class="attention-empty">✦ You’re clear for now. Add a task when your next commitment comes up.</div>';
+ box.innerHTML=chosen.length?chosen.map(task=>{
+  const kind=task.date<todayKey?'urgent':task.date===todayKey?'due':'';
+  const label=task.date<todayKey?'Overdue':task.date===todayKey?'Due today':new Date(task.date+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const source=task.plannerSource==='workspace'?' · Shared · '+plannerTaskWorkspaceName(task):'';
+  return '<div class="attention-item '+kind+'"><i class="attention-marker" aria-hidden="true"></i><div><strong>'+esc(task.title)+'</strong><span>'+label+(task.course?' · '+esc(task.course):'')+(task.priority?' · '+esc(task.priority)+' priority':'')+esc(source)+'</span></div></div>';
+ }).join(''):'<div class="attention-empty">✦ You’re clear for now. Add a task when your next commitment comes up.</div>';
 }
-function renderStats(){renderAttentionPlan();const active=data.tasks.filter(t=>!t.completed),late=active.filter(t=>t.date<today()),due=active.filter(t=>t.date===today()),done=data.tasks.filter(t=>t.completed);$('statOpen').textContent=active.length;$('statToday').textContent=due.length;$('statLate').textContent=late.length;$('statDone').textContent=done.length;$('statDoneFoot').textContent=data.tasks.length?Math.round(done.length/data.tasks.length*100)+'% of all tasks completed':'Progress adds up';$('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});$('welcomeLine').textContent=(prefs.displayName?'Welcome back, '+prefs.displayName+'. ':'')+'Your shared study space, classes and next deadlines — together in one place.';renderDashboardInsights()}function renderDashboardInsights(){const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()),weekday=(start.getDay()+6)%7;start.setDate(start.getDate()-weekday);const end=new Date(start);end.setDate(end.getDate()+7);const week=data.tasks.filter(t=>{if(!t.completedAt)return false;const d=new Date(t.completedAt);return d>=start&&d<end}),weekTotal=data.tasks.filter(t=>t.createdAt&&new Date(t.createdAt)>=start&&new Date(t.createdAt)<end).length+week.length;const ratio=weekTotal?Math.min(100,Math.round(week.length/weekTotal*100)):0;$('weekDone').textContent=week.length+' / '+Math.max(weekTotal,week.length);$('weekDetail').textContent=week.length?'Tasks completed this week':'Finish a task to start your streak';$('weekBar').style.width=ratio+'%';const horizon=new Date(start);horizon.setDate(horizon.getDate()+7);const upcoming=data.tasks.filter(t=>!t.completed&&t.date>=today()&&t.date<localDate(horizon)).sort((a,b)=>a.date.localeCompare(b.date));$('nextDeadlines').textContent=upcoming.length;$('deadlineDetail').textContent=upcoming.length?(upcoming.filter(t=>t.date===today()).length+' due today · '+upcoming.filter(t=>t.date!==today()).length+' later'):'Your next 7 days look clear';const pct=data.tasks.length?Math.round(data.tasks.filter(t=>t.completed).length/data.tasks.length*100):0;$('momentumValue').textContent=data.tasks.length?pct+'%':'Fresh start';$('momentumDetail').textContent=data.tasks.length?'All-time task completion':'Add your first task to begin'}function localDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function calendarHTML(target,small=false){const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1),offset=first.getDay(),count=new Date(y,m+1,0).getDate(),prevCount=new Date(y,m,0).getDate();let h='<div class="week">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="days">';for(let i=0;i<42;i++){let d=i-offset+1,actual=d,mm=m,yy=y,out=false;if(d<1){actual=prevCount+d;mm=m-1;out=true}else if(d>count){actual=d-count;mm=m+1;out=true}const dt=new Date(yy,mm,actual),key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'),events=data.tasks.filter(t=>t.date===key&&!t.completed).slice(0,small?1:2);h+='<button class="day '+(out?'out ':'')+(key===today()?'today ':'')+(key===selectedDate?'selected':'')+'" data-day="'+key+'" aria-label="'+key+'"><span class="daynum">'+actual+'</span>'+events.map(t=>'<span class="event-dot '+(t.category||'').toLowerCase()+'">'+esc(t.title)+'</span>').join('')+(data.tasks.filter(t=>t.date===key&&!t.completed).length>(small?1:2)?'<span class="small-label">+'+(data.tasks.filter(t=>t.date===key&&!t.completed).length-(small?1:2))+'</span>':'')+'</button>'}return h+'</div>'}
+
+function renderStats(){
+ renderAttentionPlan();
+ const tasks=plannerTasks();
+ const active=tasks.filter(task=>!task.completed);
+ const late=active.filter(task=>task.date<today());
+ const due=active.filter(task=>task.date===today());
+ const done=tasks.filter(task=>task.completed);
+ $('statOpen').textContent=active.length;
+ $('statToday').textContent=due.length;
+ $('statLate').textContent=late.length;
+ $('statDone').textContent=done.length;
+ $('statDoneFoot').textContent=tasks.length?Math.round(done.length/tasks.length*100)+'% of personal + assigned tasks completed':'Progress adds up';
+ $('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+ $('welcomeLine').textContent=(prefs.displayName?'Welcome back, '+prefs.displayName+'. ':'')+'Your shared study space, classes and next deadlines — together in one place.';
+ renderDashboardInsights();
+}
+function renderDashboardInsights(){
+ const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()),weekday=(start.getDay()+6)%7;
+ start.setDate(start.getDate()-weekday);
+ const end=new Date(start);end.setDate(end.getDate()+7);
+ const week=data.tasks.filter(task=>{
+  if(!task.completedAt)return false;
+  const date=new Date(task.completedAt);return date>=start&&date<end;
+ });
+ const weekTotal=data.tasks.filter(task=>task.createdAt&&new Date(task.createdAt)>=start&&new Date(task.createdAt)<end).length+week.length;
+ const ratio=weekTotal?Math.min(100,Math.round(week.length/weekTotal*100)):0;
+ $('weekDone').textContent=week.length+' / '+Math.max(weekTotal,week.length);
+ $('weekDetail').textContent=week.length?'Personal tasks completed this week':'Complete a personal task to start your streak';
+ $('weekBar').style.width=ratio+'%';
+ const horizon=localDate(new Date(start.getTime()+7*86400000));
+ const upcoming=plannerTasks().filter(task=>!task.completed&&task.date>=today()&&task.date<horizon).sort((a,b)=>a.date.localeCompare(b.date));
+ $('nextDeadlines').textContent=upcoming.length;
+ $('deadlineDetail').textContent=upcoming.length?(upcoming.filter(task=>task.date===today()).length+' due today · '+upcoming.filter(task=>task.date!==today()).length+' later · personal + shared'):'Your next 7 days look clear';
+ const personal=data.tasks;
+ const pct=personal.length?Math.round(personal.filter(task=>task.completed).length/personal.length*100):0;
+ $('momentumValue').textContent=personal.length?pct+'%':'Fresh start';
+ $('momentumDetail').textContent=personal.length?'Personal task completion':'Add your first personal task to begin';
+}
+function localDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function calendarHTML(target,small=false){
+ const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1),offset=first.getDay(),count=new Date(y,m+1,0).getDate(),prevCount=new Date(y,m,0).getDate();
+ const tasks=plannerTasks();
+ let html='<div class="week">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day=>'<span>'+day+'</span>').join('')+'</div><div class="days">';
+ for(let i=0;i<42;i++){
+  let day=i-offset+1,actual=day,monthIndex=m,year=y,out=false;
+  if(day<1){actual=prevCount+day;monthIndex=m-1;out=true}
+  else if(day>count){actual=day-count;monthIndex=m+1;out=true}
+  const date=new Date(year,monthIndex,actual);
+  const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  const events=tasks.filter(task=>task.date===key&&!task.completed).slice(0,small?1:2);
+  const total=tasks.filter(task=>task.date===key&&!task.completed).length;
+  html+='<button class="day '+(out?'out ':'')+(key===today()?'today ':'')+(key===selectedDate?'selected':'')+'" data-day="'+key+'" aria-label="'+key+'"><span class="daynum">'+actual+'</span>'+
+   events.map(task=>'<span class="event-dot '+(task.plannerSource==='workspace'?'group':(task.category||'').toLowerCase())+'">'+esc(task.title)+'</span>').join('')+
+   (total>(small?1:2)?'<span class="small-label">+'+(total-(small?1:2))+'</span>':'')+'</button>';
+ }
+ return html+'</div>';
+}
 function renderCalendars(){const label=month.toLocaleDateString(undefined,{month:'long',year:'numeric'});$('monthHeading').textContent=label;$('dashMonthLabel').textContent=label;$('fullCalendar').innerHTML=calendarHTML($('fullCalendar'));$('miniCalendar').innerHTML=calendarHTML($('miniCalendar'),true);document.querySelectorAll('[data-day]').forEach(el=>el.onclick=()=>{const fromMini=!!el.closest('#miniCalendar');selectedDate=el.dataset.day;renderCalendars();renderTasks();if(fromMini)switchPage('calendar')})}
 $('prevMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendars()};$('nextMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendars()};$('todayBtn').onclick=()=>{month=new Date(new Date().getFullYear(),new Date().getMonth(),1);selectedDate=today();renderCalendars();renderTasks()};$('addSelectedDate').onclick=()=>openModal('task',null,{date:selectedDate});$('taskSearch').addEventListener('input',renderTasks);$('taskFilter').onchange=renderTasks;$('categoryFilter').onchange=renderTasks;$('taskSort').onchange=renderTasks;
 function renderClasses(){
@@ -611,7 +754,7 @@ function renderClasses(){
  document.querySelectorAll('[data-delete-class]').forEach(b=>b.onclick=()=>{if(confirm('Delete this class?')){data.classes=data.classes.filter(c=>c.id!==b.dataset.deleteClass);save()}});
 }
 function renderGrades(){const a=data.grades;$('gradeCount').textContent=a.length;const credits=a.reduce((s,g)=>s+(Number(g.credits)||0),0),graded=a.filter(g=>g.points!==''&&g.points!==null&&g.points!==undefined&&Number.isFinite(Number(g.points))),gradedCredits=graded.reduce((s,g)=>s+(Number(g.credits)||0),0),points=graded.reduce((s,g)=>s+(Number(g.points)||0)*(Number(g.credits)||0),0);$('creditCount').textContent=credits;$('gpaValue').textContent=gradedCredits?(points/gradedCredits).toFixed(2):'—';$('gradesList').innerHTML=a.length?a.map(g=>'<div class="task"><div class="task-main"><div class="task-title">'+esc(g.course)+'</div><div class="task-meta"><span>'+esc(g.credits)+' credit hours</span><span>'+(g.points!==''&&g.points!==null&&g.points!==undefined?esc(g.points)+' / 4.00 points':'Not graded yet')+'</span>'+(g.letter?'<span>'+esc(g.letter)+'</span>':'')+'</div></div><button class="mini" data-edit-grade="'+esc(g.id)+'">✎</button><button class="mini" data-delete-grade="'+esc(g.id)+'">✕</button></div>').join(''):'<div class="empty">Add courses and the grade points from your university&#39;s scale.</div>';$('gradesList').insertAdjacentHTML('beforeend','<div class="sub" style="padding:10px 2px">First semester: '+FIRST_SEMESTER_SUBJECTS.length+' subjects · '+FIRST_SEMESTER_SUBJECTS.reduce((n,s)=>n+s.credits,0)+' total credit hours. GPA uses only courses with grade points entered.</div>');document.querySelectorAll('[data-edit-grade]').forEach(b=>b.onclick=()=>openModal('grade',b.dataset.editGrade));document.querySelectorAll('[data-delete-grade]').forEach(b=>b.onclick=()=>{if(confirm('Delete this course?')){data.grades=data.grades.filter(g=>g.id!==b.dataset.deleteGrade);save()}})}
-async function loadWorkspaces(){if(!supa||!user){workspaces=[];activeWorkspaceId=null;$('workspaceList').innerHTML='<div class="empty">Sign in under Settings & Sync to use Shared Study Workspaces.</div>';$('workspaceContent').innerHTML='<div class="empty">Connect Supabase and sign in to create shared spaces.</div>';$('workspaceHeading').textContent='Shared tasks';$('workspaceSub').textContent='Choose a workspace to get started.';return}try{const {data:r,error}=await supa.from('uniplanner_workspaces').select('id,name,created_at').order('created_at',{ascending:false});if(error)throw error;workspaces=r||[];if(!workspaces.some(w=>w.id===activeWorkspaceId))activeWorkspaceId=workspaces[0]?.id||null;renderWorkspaceList();await loadWorkspaceInvitations();await loadDiscoverableWorkspaces();await loadWorkspaceTasks()}catch(e){console.error(e);$('workspaceList').innerHTML='<div class="empty">Could not load workspaces. Check that supabase-schema.sql has been run.</div>';toast('Workspace load failed: '+(e.message||''),'error')}}
+async function loadWorkspaces(){if(!supa||!user){workspaces=[];activeWorkspaceId=null;$('workspaceList').innerHTML='<div class="empty">Sign in under Settings & Sync to use Shared Study Workspaces.</div>';$('workspaceContent').innerHTML='<div class="empty">Connect Supabase and sign in to create shared spaces.</div>';$('workspaceHeading').textContent='Shared tasks';$('workspaceSub').textContent='Choose a workspace to get started.';return}try{const {data:r,error}=await supa.from('uniplanner_workspaces').select('id,name,created_at').order('created_at',{ascending:false});if(error)throw error;workspaces=r||[];if(!workspaces.some(w=>w.id===activeWorkspaceId))activeWorkspaceId=workspaces[0]?.id||null;renderWorkspaceList();await loadWorkspaceInvitations();await loadDiscoverableWorkspaces();await loadWorkspaceTasks();await renderAssignedWorkspaceTasks()}catch(e){console.error(e);$('workspaceList').innerHTML='<div class="empty">Could not load workspaces. Check that supabase-schema.sql has been run.</div>';toast('Workspace load failed: '+(e.message||''),'error')}}
 async function loadWorkspaceInvitations(){
  const panel=$('workspaceInvitationsPanel'),box=$('workspaceInvitationsList');
  if(!panel||!box||!supa||!user)return;
@@ -681,7 +824,7 @@ async function loadAdminPanel(){if(!await refreshAdminVisibility()){toast('Owner
 async function loadAdminUsers(){const box=$('adminUsers');try{const {data,error}=await supa.rpc('uniplanner_admin_list_users');if(error)throw error;const rows=data||[];$('adminUserCount').textContent=rows.length+' account'+(rows.length===1?'':'s');if(!rows.length){box.innerHTML='<div class="empty">No accounts found.</div>';return}box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--muted);text-align:left"><th style="padding:10px">Account</th><th style="padding:10px">Status</th><th style="padding:10px">Created</th><th style="padding:10px">Action</th></tr></thead><tbody>'+rows.map(r=>{const status=['approved','revoked','pending'].includes(r.status)?r.status:'pending';const isSelf=r.user_id===user.id;const action=status==='approved'?'Revoke access':'Approve access';const next=status==='approved'?'revoked':'approved';return '<tr style="border-top:1px solid var(--line)"><td style="padding:11px 10px;overflow-wrap:anywhere"><strong>'+escapeAdminText(r.display_name||r.email||'Unnamed account')+'</strong><div class="sub">'+escapeAdminText(r.email||r.user_id)+'</div></td><td style="padding:11px 10px"><span class="tag '+(status==='approved'?'low':status==='revoked'?'high':'medium')+'">'+escapeAdminText(status)+'</span></td><td style="padding:11px 10px;white-space:nowrap">'+(r.created_at?new Date(r.created_at).toLocaleDateString():'—')+'</td><td style="padding:11px 10px;white-space:nowrap"><button class="btn '+(next==='approved'?'primary':'')+'" data-admin-user="'+escapeAdminText(r.user_id)+'" data-admin-status="'+next+'" '+(isSelf&&next==='revoked'?'disabled title="You cannot revoke your own access"':'')+'>'+action+'</button></td></tr>'}).join('')+'</tbody></table></div>';box.querySelectorAll('[data-admin-user]').forEach(b=>b.onclick=async()=>{const id=b.dataset.adminUser,status=b.dataset.adminStatus;if(!confirm((status==='approved'?'Approve this account for all of UniPlanner?':'Revoke this account’s access to all of UniPlanner? The account and data will not be deleted.')))return;b.disabled=true;try{const {error}=await supa.rpc('uniplanner_admin_set_access',{p_user_id:id,p_status:status});if(error)throw error;toast(status==='approved'?'Account approved.':'Website access revoked.');await loadAdminUsers()}catch(e){toast('Could not update access: '+e.message,'error');b.disabled=false}})}catch(e){box.innerHTML='<div class="empty">Could not load accounts: '+escapeAdminText(e.message)+'</div>';$('adminUserCount').textContent='Unavailable'}}
 async function loadAdminMemberships(){const box=$('adminMemberships');try{const {data,error}=await supa.rpc('uniplanner_admin_list_memberships');if(error)throw error;const rows=data||[];if(!rows.length){box.innerHTML='<div class="empty">No workspace memberships yet.</div>';return}box.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:var(--muted);text-align:left"><th style="padding:10px">Workspace</th><th style="padding:10px">Member</th><th style="padding:10px">Role</th><th style="padding:10px">Action</th></tr></thead><tbody>'+rows.map(r=>'<tr style="border-top:1px solid var(--line)"><td style="padding:11px 10px">'+escapeAdminText(r.workspace_name)+'</td><td style="padding:11px 10px;overflow-wrap:anywhere">'+escapeAdminText(r.email||r.user_id)+'</td><td style="padding:11px 10px">'+escapeAdminText(r.member_role)+'</td><td style="padding:11px 10px">'+(r.member_role==='owner'?'<span class="sub">Protected</span>':'<button class="btn" data-admin-workspace="'+escapeAdminText(r.workspace_id)+'" data-admin-member="'+escapeAdminText(r.user_id)+'">Remove member</button>')+'</td></tr>').join('')+'</tbody></table></div>';box.querySelectorAll('[data-admin-workspace]').forEach(b=>b.onclick=async()=>{if(!confirm('Remove this person from this workspace only? Their account and planner data will remain.'))return;b.disabled=true;try{const {error}=await supa.rpc('uniplanner_admin_remove_workspace_member',{p_workspace_id:b.dataset.adminWorkspace,p_user_id:b.dataset.adminMember});if(error)throw error;toast('Workspace membership removed.');await loadAdminMemberships()}catch(e){toast('Could not remove member: '+e.message,'error');b.disabled=false}})}catch(e){box.innerHTML='<div class="empty">Could not load memberships: '+escapeAdminText(e.message)+'</div>'}}
 async function sendAdminInvitation(event){event.preventDefault();if(!await refreshAdminVisibility()){toast('Owner permission is required to invite users.','error');return}const email=$('adminInviteEmail').value.trim().toLowerCase();const button=$('adminInviteSubmit'),message=$('adminInviteMessage');if(!email||!email.includes('@')){message.textContent='Enter a valid email address.';return}button.disabled=true;message.textContent='Sending invitation…';try{const {data,error}=await supa.functions.invoke('admin-invite-user',{body:{email}});if(error)throw error;if(data?.error)throw new Error(data.error);message.textContent='Invitation sent to '+email+'. They can choose their own password from the email link; their UniPlanner access remains pending until you approve them.';$('adminInviteEmail').value='';toast('Invitation sent.');await loadAdminUsers()}catch(e){console.error('Admin invitation failed',e);message.textContent='Could not send invitation: '+(e.message||'Unknown error')+' Check the Edge Function deployment, secrets, and Supabase email settings.';toast('Invitation failed. Check the message in the admin panel.','error')}finally{button.disabled=false}}$('adminInviteForm').addEventListener('submit',sendAdminInvitation);$('adminRefresh').onclick=loadAdminPanel;
-function setGateMessage(message){const el=$('accessMessage');el.textContent=message;el.className='gate-message';if(/not approved|pending|revoked|contact the owner|contact them directly|denied|could not verify|failed|incorrect|error/i.test(message||''))el.classList.add('gate-error');else if(/approved|signed out|success/i.test(message||''))el.classList.add('gate-success');else el.classList.add('gate-info')}function lockApp(message){accessGranted=false;stopGroupNotificationFeed();document.body.classList.add('access-locked');$('accessSignOut').style.display=user?'block':'none';$('accessSignIn').disabled=false;if(message)setGateMessage(message);syncUi()}async function verifyAccess(silent=false){if(!supa||!user){lockApp('Sign in with an owner-approved account to continue.');return false}if(accessCheckBusy)return accessGranted;accessCheckBusy=true;try{const {data:row,error}=await supa.from('uniplanner_access').select('status').eq('user_id',user.id).maybeSingle();if(error)throw error;if(row?.status!=='approved'){lockApp('This account is not approved for UniPlanner. Contact the owner if you think this is a mistake.');return false}accessGranted=true;document.body.classList.remove('access-locked');$('accessSignOut').style.display='none';setGateMessage('Access approved.');syncUi();refreshAdminVisibility();startGroupNotificationFeed();if(!silent){await loadMyProfile();await syncMyProfile();await cloudPull()}return true}catch(e){console.error(e);lockApp('Could not verify access with the server. Check your connection and try again.');return false}finally{accessCheckBusy=false}}function initSupabase(){if(!window.supabase){$('syncStatus').textContent='Cloud library unavailable';lockApp('Could not load the secure sign-in service. Refresh the page or try again later.');return}supa=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});supa.auth.getSession().then(async({data:d,error})=>{if(error)throw error;user=d.session?.user||null;syncUi();if(user)await verifyAccess(false);else lockApp('Sign in with an owner-approved account to continue.')}).catch(e=>{console.error(e);lockApp('Could not check your session. Refresh the page and try again.')})}
+function setGateMessage(message){const el=$('accessMessage');el.textContent=message;el.className='gate-message';if(/not approved|pending|revoked|contact the owner|contact them directly|denied|could not verify|failed|incorrect|error/i.test(message||''))el.classList.add('gate-error');else if(/approved|signed out|success/i.test(message||''))el.classList.add('gate-success');else el.classList.add('gate-info')}function lockApp(message){accessGranted=false;assignedWorkspaceTasksCache=[];stopGroupNotificationFeed();document.body.classList.add('access-locked');$('accessSignOut').style.display=user?'block':'none';$('accessSignIn').disabled=false;if(message)setGateMessage(message);syncUi()}async function verifyAccess(silent=false){if(!supa||!user){lockApp('Sign in with an owner-approved account to continue.');return false}if(accessCheckBusy)return accessGranted;accessCheckBusy=true;try{const {data:row,error}=await supa.from('uniplanner_access').select('status').eq('user_id',user.id).maybeSingle();if(error)throw error;if(row?.status!=='approved'){lockApp('This account is not approved for UniPlanner. Contact the owner if you think this is a mistake.');return false}accessGranted=true;document.body.classList.remove('access-locked');$('accessSignOut').style.display='none';setGateMessage('Access approved.');syncUi();refreshAdminVisibility();startGroupNotificationFeed();if(!silent){await loadMyProfile();await syncMyProfile();await cloudPull()}return true}catch(e){console.error(e);lockApp('Could not verify access with the server. Check your connection and try again.');return false}finally{accessCheckBusy=false}}function initSupabase(){if(!window.supabase){$('syncStatus').textContent='Cloud library unavailable';lockApp('Could not load the secure sign-in service. Refresh the page or try again later.');return}supa=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});supa.auth.getSession().then(async({data:d,error})=>{if(error)throw error;user=d.session?.user||null;syncUi();if(user)await verifyAccess(false);else lockApp('Sign in with an owner-approved account to continue.')}).catch(e=>{console.error(e);lockApp('Could not check your session. Refresh the page and try again.')})}
 async function loadMyProfile(){if(!supa||!user)return;const {data:profile,error}=await supa.from('uniplanner_profiles').select('display_name').eq('user_id',user.id).maybeSingle();if(error)throw error;if(profile?.display_name){prefs.displayName=profile.display_name;$('displayName').value=profile.display_name;try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch{}}}
 async function syncMyProfile(){if(!supa||!user)return;const display_name=String(prefs.displayName||'').trim();if(!display_name)return;if(display_name.length>40){toast('Display name must be 40 characters or fewer.','error');return}const {error}=await supa.from('uniplanner_profiles').upsert({user_id:user.id,display_name,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error}
 async function loadWorkspaceProfiles(userIds){if(!supa||!userIds?.length)return new Map();const ids=[...new Set(userIds.filter(Boolean))];if(!ids.length)return new Map();const {data:profiles,error}=await supa.from('uniplanner_profiles').select('user_id,display_name').in('user_id',ids);if(error)throw error;return new Map((profiles||[]).map(p=>[p.user_id,p.display_name]))}
@@ -703,6 +846,7 @@ function handleWorkspaceCollaborationRealtime(payload, kind) {
   const row = payload?.new;
   if (!row) return;
   queueWorkspaceActivityRefresh(row.workspace_id);
+  if (kind === 'task' && row.assigned_to === user?.id) void renderAssignedWorkspaceTasks();
   const notificationsAllowed = prefs.groupNotifications &&
     typeof window !== 'undefined' && 'Notification' in window &&
     Notification.permission === 'granted';
