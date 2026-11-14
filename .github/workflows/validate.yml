@@ -49,6 +49,18 @@ jobs:
             if (!html.includes(marker)) throw new Error(`Missing required UI element/behavior marker: ${marker}`);
           }
 
+          const sidebar = html.match(/<aside class="sidebar"[\\s\\S]*?<\\/aside>/i)?.[0] || '';
+          for (const page of ['dashboard', 'collaborate', 'attendance', 'tasks', 'timetable', 'calendar', 'settings']) {
+            if (!sidebar.includes('data-page="' + page + '"')) throw new Error('Missing primary navigation page: ' + page);
+          }
+          for (const legacyPage of ['grades', 'faculty', 'focus', 'notes']) {
+            if (sidebar.includes('data-page="' + legacyPage + '"')) throw new Error('Legacy page must not appear in primary navigation: ' + legacyPage);
+          }
+          const dashboardStart = html.indexOf('id="page-dashboard"');
+          const dashboardEnd = html.indexOf('</section>', dashboardStart);
+          const dashboard = html.slice(dashboardStart, dashboardEnd);
+          if (/data-goto="(?:grades|faculty|focus|notes)"/.test(dashboard)) throw new Error('Legacy destinations must not appear in dashboard quick actions');
+
           const projectMigration = fs.readFileSync('workspace-project-task-link-migration.sql', 'utf8').toLowerCase();
           for (const marker of [
             'add column if not exists project_id uuid',
