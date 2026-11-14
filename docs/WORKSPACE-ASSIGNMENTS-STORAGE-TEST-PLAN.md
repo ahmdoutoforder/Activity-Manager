@@ -75,7 +75,7 @@ The private bucket's Storage policies are separate from the public-table RLS pol
 
 ## Workspace Storage cleanup worker
 
-The worker is invoked when the signed-in app loads the Shared Study Workspaces list. It is safe to retry: a failed Storage listing/removal leaves the queue job intact, while successfully removed objects can be encountered again if another tab is processing the same job. The worker follows the current private bucket layout only:
+The worker is invoked when the signed-in app loads the Shared Study Workspaces list. It reads cleanup jobs in stable 100-row pages (up to 1,000 jobs per invocation) before deleting any queue rows, so deleting successful jobs cannot cause range pagination to skip later jobs. Larger backlogs are continued on the next workspace-list load. It is safe to retry: a failed Storage listing/removal leaves the queue job intact, while successfully removed objects can be encountered again if another tab is processing the same job. The worker follows the current private bucket layout only:
 - `workspace_id/assignment_id/resources/file`
 - `workspace_id/assignment_id/submissions/user_id/file`
 
