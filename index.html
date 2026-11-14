@@ -842,6 +842,208 @@ loadWorkspaceTasks = async function() {
   await showWorkspaceTab(workspaceTab, w, overview, extra);
 };
 
+/* Project-linked tasks: a single shared-task record can belong to one project. */
+const showWorkspaceTabBeforeProjectTasks = showWorkspaceTab;
+let projectTasksRequest = 0;
+
+async function renderWorkspaceProjectTasks(workspace, project, extra) {
+  const request = ++projectTasksRequest;
+  let panel = $('wProjectTasksPanel');
+  if (!panel) {
+    panel = document.createElement('section');
+    panel.id = 'wProjectTasksPanel';
+    panel.className = 'panel workspace-project-tasks';
+    panel.style.marginTop = '14px';
+    extra.appendChild(panel);
+  }
+  panel.innerHTML = '<h3>' + esc(project.title) + ' · tasks</h3><p class="sub">Tasks linked to this project stay as normal shared workspace tasks—never duplicate records.</p><div class="sub">Loading project tasks…</div>';
+
+  try {
+    const [tasksResult, membersResult] = await Promise.all([
+      supa.from('uniplanner_shared_tasks')
+        .select('id,title,description,due_date,completed,assigned_to,created_by,created_at')
+        .eq('workspace_id', workspace.id)
+        .eq('project_id', project.id)
+        .order('due_date', { ascending: true })
+        .order('created_at', { ascending: true }),
+      supa.from('uniplanner_workspace_members')
+        .select('user_id,role')
+        .eq('workspace_id', workspace.id)
+        .order('joined_at', { ascending: true })
+    ]);
+    if (tasksResult.error) throw tasksResult.error;
+    if (membersResult.error) throw membersResult.error;
+    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+
+    const members = membersResult.data || [];
+    const profiles = await loadWorkspaceProfiles(members.map(member => member.user_id));
+    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+    const myRole = members.find(member => member.user_id === user.id)?.role || 'member';
+    const isOwner = myRole === 'owner';
+    const nameFor = id => id ? (profiles.get(id) || (id === user.id ? prefs.displayName : '') || 'Member') : 'Unassigned';
+    const tasks = tasksResult.data || [];
+
+    panel.innerHTML =
+      '<div class="panel-head"><div><h3>' + esc(project.title) + ' · tasks</h3><p class="sub">One shared task record, visible in the workspace and linked to this project.</p></div>' +
+      '<span class="tag">' + tasks.filter(task => task.completed).length + ' / ' + tasks.length + ' completed</span></div>' +
+      '<div class="workspace-project-task-form">' +
+        '<div class="field"><label for="wProjectTaskTitle">Task title</label><input id="wProjectTaskTitle" maxlength="180" placeholder="What needs to be done?" required></div>' +
+        '<div class="field"><label for="wProjectTaskDescription">Details (optional)</label><textarea id="wProjectTaskDescription" rows="2" maxlength="5000" placeholder="Instructions or context"></textarea></div>' +
+        '<div class="formgrid"><div class="field"><label for="wProjectTaskDue">Due date</label><input id="wProjectTaskDue" type="date" value="' + today() + '" required></div>' +
+        '<div class="field"><label for="wProjectTaskAssignee">Assign to</label><select id="wProjectTaskAssignee"><option value="">Unassigned</option>' +
+          members.map(member => '<option value="' + esc(member.user_id) + '">' + esc(nameFor(member.user_id) + (member.user_id === user.id ? ' (you)' : '')) + '</option>').join('') +
+        '</select></div></div><button class="btn primary" id="wProjectTaskAdd" type="button">＋ Add project task</button></div>' +
+      '<div class="divider"></div><div class="task-list" id="wProjectTaskList">' +
+        (tasks.length ? tasks.map(task =>
+          '<div class="task ' + (task.completed ? 'completed' : '') + '">' +
+            '<input class="check" type="checkbox" data-project-task-complete="' + esc(task.id) + '" ' + (task.completed ? 'checked' : '') + ' aria-label="Complete ' + esc(task.title) + '">' +
+            '<div class="task-main"><div class="task-title">' + esc(task.title) + '</div>' +
+            '<div class="task-meta"><span>Due ' + esc(task.due_date) + '</span><span class="tag">Assigned: ' + esc(nameFor(task.assigned_to)) + '</span>' +
+            '<span class="tag">' + (task.completed ? 'Completed' : 'Open') + '</span></div>' +
+            (task.description ? '<div class="sub">' + esc(task.description) + '</div>' : '') +
+            '</div>' +
+            ((isOwner || task.created_by === user.id) ? '<button class="mini" type="button" data-project-task-delete="' + esc(task.id) + '" aria-label="Delete project task">✕</button>' : '') +
+          '</div>'
+        ).join('') : '<div class="empty">No tasks linked to this project yet. Add the first task above.</div>') +
+      '</div>';
+
+    $('wProjectTaskAdd').onclick = async () => {
+      const title = $('wProjectTaskTitle').value.trim();
+      const dueDate = $('wProjectTaskDue').value;
+      if (!title || !dueDate) {
+        toast('Add a task title and due date.', 'error');
+        return;
+      }
+      const button = $('wProjectTaskAdd');
+      button.disabled = true;
+      try {
+        const { error } = await supa.from('uniplanner_shared_tasks').insert({
+          workspace_id: workspace.id,
+          project_id: project.id,
+          created_by: user.id,
+          title,
+          description: $('wProjectTaskDescription').value.trim(),
+          due_date: dueDate,
+          category: 'Group',
+          priority: 'Medium',
+          assigned_to: $('wProjectTaskAssignee').value || null
+        });
+        if (error) throw error;
+        toast('Project task added.');
+        await renderWorkspaceProjectTasks(workspace, project, extra);
+      } catch (error) {
+        toast('Could not add project task: ' + (error.message || 'Unknown error'), 'error');
+        button.disabled = false;
+      }
+    };
+
+    panel.querySelectorAll('[data-project-task-complete]').forEach(input => {
+      input.onchange = async () => {
+        input.disabled = true;
+        try {
+          const { error } = await supa.from('uniplanner_shared_tasks')
+            .update({ completed: input.checked, updated_at: new Date().toISOString() })
+            .eq('id', input.dataset.projectTaskComplete)
+            .eq('workspace_id', workspace.id)
+            .eq('project_id', project.id);
+          if (error) throw error;
+          await renderWorkspaceProjectTasks(workspace, project, extra);
+        } catch (error) {
+          toast('Could not update project task: ' + (error.message || 'Unknown error'), 'error');
+          input.disabled = false;
+          input.checked = !input.checked;
+        }
+      };
+    });
+
+    panel.querySelectorAll('[data-project-task-delete]').forEach(button => {
+      button.onclick = async () => {
+        if (!confirm('Delete this shared task for the whole workspace?')) return;
+        button.disabled = true;
+        try {
+          const { error } = await supa.from('uniplanner_shared_tasks')
+            .delete()
+            .eq('id', button.dataset.projectTaskDelete)
+            .eq('workspace_id', workspace.id)
+            .eq('project_id', project.id);
+          if (error) throw error;
+          toast('Project task deleted.');
+          await renderWorkspaceProjectTasks(workspace, project, extra);
+        } catch (error) {
+          toast('Could not delete project task: ' + (error.message || 'Unknown error'), 'error');
+          button.disabled = false;
+        }
+      };
+    });
+  } catch (error) {
+    if (request !== projectTasksRequest || !$('wProjectTasksPanel')) return;
+    panel.innerHTML = '<h3>' + esc(project.title) + ' · tasks</h3><div class="empty">Project-linked tasks are not available yet on this database. Confirm the project-task migration is installed in this environment. ' + esc(error.message || '') + '</div>';
+  }
+}
+
+showWorkspaceTab = async function(tab, workspace, overview, extra) {
+  await showWorkspaceTabBeforeProjectTasks(tab, workspace, overview, extra);
+  if (tab !== 'projects' || !workspace || !supa || !user) return;
+
+  const list = $('wProjectsList');
+  if (!list) return;
+  const [projectsResult, membersResult] = await Promise.all([
+    supa.from('uniplanner_projects')
+      .select('id,title,created_by')
+      .eq('workspace_id', workspace.id),
+    supa.from('uniplanner_workspace_members')
+      .select('role')
+      .eq('workspace_id', workspace.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+  ]);
+  if (projectsResult.error) {
+    toast('Could not prepare project tasks: ' + projectsResult.error.message, 'error');
+    return;
+  }
+  if (membersResult.error) {
+    toast('Could not verify workspace permissions: ' + membersResult.error.message, 'error');
+    return;
+  }
+  const isOwner = membersResult.data?.role === 'owner';
+  const projects = projectsResult.data || [];
+  const projectById = new Map(projects.map(project => [project.id, project]));
+
+  list.querySelectorAll('[data-wproject-delete]').forEach(deleteButton => {
+    const project = projectById.get(deleteButton.dataset.wprojectDelete);
+    if (!project) return;
+    if (!isOwner && project.created_by !== user.id) {
+      deleteButton.remove();
+    } else {
+      deleteButton.onclick = async () => {
+        if (!confirm('Delete "' + project.title + '"? Its shared tasks will remain in the workspace and become unlinked from this project.')) return;
+        deleteButton.disabled = true;
+        try {
+          const { error } = await supa.from('uniplanner_projects')
+            .delete()
+            .eq('id', project.id)
+            .eq('workspace_id', workspace.id);
+          if (error) throw error;
+          toast('Project deleted. Its tasks remain in the workspace.');
+          await showWorkspaceTab('projects', workspace, overview, extra);
+        } catch (error) {
+          toast('Could not delete project: ' + (error.message || 'Unknown error'), 'error');
+          deleteButton.disabled = false;
+        }
+      };
+    }
+
+    const taskButton = document.createElement('button');
+    taskButton.type = 'button';
+    taskButton.className = 'btn';
+    taskButton.textContent = 'View project tasks';
+    taskButton.onclick = () => renderWorkspaceProjectTasks(workspace, project, extra);
+    const main = deleteButton.closest('.task')?.querySelector('.task-main');
+    if (main) main.appendChild(taskButton);
+  });
+};
+
+
 })();
 </script>
 <script src="./semester-upgrade.js"></script>
