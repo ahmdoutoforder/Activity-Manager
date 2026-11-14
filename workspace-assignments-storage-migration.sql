@@ -261,7 +261,9 @@ with check (
   and public.uniplanner_is_workspace_member(workspace_id)
   and exists (
     select 1 from public.uniplanner_assignments a
-    where a.id = assignment_id and a.workspace_id = uniplanner_assignment_submissions.workspace_id
+    where a.id = assignment_id
+      and a.workspace_id = uniplanner_assignment_submissions.workspace_id
+      and a.status = 'open'
   )
 );
 
@@ -325,6 +327,7 @@ with check (
       and a.workspace_id::text = split_part(name, '/', 1)
       and public.uniplanner_is_approved()
       and public.uniplanner_is_workspace_member(a.workspace_id)
+      and a.status = 'open'
   )
 );
 
