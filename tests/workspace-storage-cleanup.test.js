@@ -136,13 +136,13 @@ function createWorker({ removeFails = false, listFails = false, invalidPath = fa
   }
 
   {
-    const fixture = createWorker({ jobCount: 12 });
+    const fixture = createWorker({ jobCount: 112 });
     const result = await fixture.run();
-    assert.equal(result.completed, 12, 'the worker must drain beyond the first ten jobs');
+    assert.equal(result.completed, 112, 'the worker must drain beyond the first ten jobs and a full queue page');
     assert.equal(result.failed, 0);
-    assert.equal(result.total, 12);
-    assert.equal(fixture.deletedJobCount, 12);
-    assert.deepEqual(fixture.rangeCalls.map(range => range.from), [0], '12 jobs fit in one 100-row page');
+    assert.equal(result.total, 112);
+    assert.equal(fixture.deletedJobCount, 112);
+    assert.deepEqual(fixture.rangeCalls.map(range => range.from), [0, 100], 'the queue must be paginated when it exceeds 100 jobs');
   }
 
   {
