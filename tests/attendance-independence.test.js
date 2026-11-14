@@ -3,6 +3,12 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const source = fs.readFileSync('semester-upgrade.js', 'utf8');
+const subjectCardStart = source.indexOf('function subjectCard(g,detailsTarget){');
+const subjectCardEnd = source.indexOf('function targetScoreText(g,target){', subjectCardStart);
+assert.ok(subjectCardStart >= 0 && subjectCardEnd > subjectCardStart, 'legacy grade card source must be present');
+const gradeCardSource = source.slice(subjectCardStart, subjectCardEnd);
+assert.doesNotMatch(gradeCardSource, /attStats|attendance/i, 'Grades UI must not render or manage attendance');
+
 const required = [
   'd.attendanceCoursesInitialized',
   "type:c.type==='Lab'?'Lab':'Lecture'",
