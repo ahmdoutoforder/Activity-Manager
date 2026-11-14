@@ -1172,21 +1172,32 @@ async function drainWorkspaceStorageCleanupJobs(){
   if(workspaceStorageCleanupPromise)return workspaceStorageCleanupPromise;
 
   const run=(async()=>{
-    const {data:jobs,error:jobsError}=await supa
-      .from('uniplanner_workspace_storage_cleanup_jobs')
-      .select('id,workspace_id')
-      .order('created_at',{ascending:true})
-      .limit(10);
+    const pending=[];
+    const cleanupPageSize=100;
+    const cleanupJobLimit=1000;
 
-    if(jobsError){
-      const message=String(jobsError.message||'');
-      const queueNotInstalled=jobsError.code==='42P01'||jobsError.code==='PGRST205'||
-        /could not find the table|relation .* does not exist/i.test(message);
-      if(queueNotInstalled)return {completed:0,failed:0,total:0,skipped:true};
-      throw jobsError;
+    /* Read every page before deleting any queue rows. That keeps range-based
+       pagination stable even while successful jobs are removed below. */
+    for(let offset=0;offset<cleanupJobLimit;offset+=cleanupPageSize){
+      const {data:page,error:jobsError}=await supa
+        .from('uniplanner_workspace_storage_cleanup_jobs')
+        .select('id,workspace_id')
+        .order('created_at',{ascending:true})
+        .range(offset,offset+cleanupPageSize-1);
+
+      if(jobsError){
+        const message=String(jobsError.message||'');
+        const queueNotInstalled=jobsError.code==='42P01'||jobsError.code==='PGRST205'||
+          /could not find the table|relation .* does not exist/i.test(message);
+        if(queueNotInstalled&&offset===0)return {completed:0,failed:0,total:0,skipped:true};
+        throw jobsError;
+      }
+
+      const batch=page||[];
+      pending.push(...batch);
+      if(batch.length<cleanupPageSize)break;
     }
 
-    const pending=jobs||[];
     if(!pending.length)return {completed:0,failed:0,total:0};
     const bucket=supa.storage.from(ASSIGNMENT_FILE_BUCKET);
     let completed=0,failed=0,removedTotal=0;
