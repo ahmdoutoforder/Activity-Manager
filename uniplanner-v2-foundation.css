@@ -613,3 +613,72 @@ body {
 }
 .dashboard-hero .hero-actions .btn.primary:hover { filter:brightness(1.08); }
 .hero-bottomline b { color: #c29eff; }
+
+/* Weekly timetable: readable day groups and clear class-time hierarchy. */
+#page-timetable #timetableList {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  align-items:start;
+}
+.timetable-day-group {
+  min-width:0;
+  padding:13px;
+  border:1px solid #352943;
+  border-radius:15px;
+  background:linear-gradient(145deg,#17111f,#100c14);
+}
+.timetable-day-group.is-today {
+  border-color:#8059aa;
+  box-shadow:inset 0 0 0 1px #b48aff20,0 8px 22px #0002;
+}
+.timetable-day-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:2px 2px 10px;
+  margin-bottom:8px;
+  border-bottom:1px solid #30243d;
+}
+.timetable-day-heading strong {
+  color:#eee5f8;
+  font:750 13px Manrope,sans-serif;
+}
+.timetable-day-heading span {
+  color:#a096ae;
+  font-size:10px;
+}
+.timetable-day-classes { display:flex; flex-direction:column; gap:8px; }
+.timetable-class-card {
+  display:grid;
+  grid-template-columns:74px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:1px solid #30243d;
+  border-radius:11px;
+  background:#100c15;
+}
+.timetable-class-time {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  padding:8px 7px;
+  border-radius:9px;
+  background:#251a32;
+  text-align:center;
+}
+.timetable-class-time strong { color:#e9d9ff; font-size:11px; }
+.timetable-class-time span { color:#a99bb8; font-size:9px; }
+.timetable-class-main { min-width:0; }
+.timetable-class-main .task-title { overflow-wrap:anywhere; }
+.timetable-class-actions { display:flex; flex-direction:column; gap:3px; }
+@media(max-width:900px) {
+  #page-timetable #timetableList { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:480px) {
+  .timetable-day-group { padding:10px; }
+  .timetable-class-card { grid-template-columns:66px minmax(0,1fr) auto; gap:7px; padding:8px; }
+  .timetable-class-time { padding:7px 4px; }
+}
