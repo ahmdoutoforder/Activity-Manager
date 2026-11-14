@@ -1167,7 +1167,8 @@ let workspaceAssignmentsRequest = 0;
 
 function assignmentFileMime(file){
   const ext = String(file.name.split('.').pop() || '').toLowerCase();
-  const mime = file.type || ASSIGNMENT_EXTENSION_MIMES[ext] || '';
+  const reported = file.type || '';
+  const mime = ASSIGNMENT_ALLOWED_MIMES.has(reported) ? reported : (ASSIGNMENT_EXTENSION_MIMES[ext] || '');
   return ASSIGNMENT_ALLOWED_MIMES.has(mime) ? mime : '';
 }
 
