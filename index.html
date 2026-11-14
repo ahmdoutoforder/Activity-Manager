@@ -685,7 +685,69 @@ function setGateMessage(message){const el=$('accessMessage');el.textContent=mess
 async function loadMyProfile(){if(!supa||!user)return;const {data:profile,error}=await supa.from('uniplanner_profiles').select('display_name').eq('user_id',user.id).maybeSingle();if(error)throw error;if(profile?.display_name){prefs.displayName=profile.display_name;$('displayName').value=profile.display_name;try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch{}}}
 async function syncMyProfile(){if(!supa||!user)return;const display_name=String(prefs.displayName||'').trim();if(!display_name)return;if(display_name.length>40){toast('Display name must be 40 characters or fewer.','error');return}const {error}=await supa.from('uniplanner_profiles').upsert({user_id:user.id,display_name,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error}
 async function loadWorkspaceProfiles(userIds){if(!supa||!userIds?.length)return new Map();const ids=[...new Set(userIds.filter(Boolean))];if(!ids.length)return new Map();const {data:profiles,error}=await supa.from('uniplanner_profiles').select('user_id,display_name').in('user_id',ids);if(error)throw error;return new Map((profiles||[]).map(p=>[p.user_id,p.display_name]))}
-let groupNotificationChannel=null;function stopGroupNotificationFeed(){if(groupNotificationChannel&&supa){try{supa.removeChannel(groupNotificationChannel)}catch(e){console.warn('Could not stop group notification feed',e)}}groupNotificationChannel=null}function startGroupNotificationFeed(){stopGroupNotificationFeed();if(!prefs.groupNotifications||!supa||!user||!accessGranted||!('Notification'in window)||Notification.permission!=='granted')return;const notifyGroup=(payload,kind)=>{const row=payload?.new;if(!row||row.created_by===user.id)return;const id=row.id||row.created_at||Date.now();void sendPlannerNotification('group:'+kind+':'+id,'UniPlanner · Shared workspace activity',kind==='message'?'A member posted a new group chat message.':kind==='comment'?'A member commented on a shared task.':'A new shared task was added.')};groupNotificationChannel=supa.channel('uniplanner-group-notifications-'+user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'uniplanner_group_messages'},p=>notifyGroup(p,'message')).on('postgres_changes',{event:'INSERT',schema:'public',table:'uniplanner_task_comments'},p=>notifyGroup(p,'comment')).on('postgres_changes',{event:'INSERT',schema:'public',table:'uniplanner_shared_tasks'},p=>notifyGroup(p,'task')).subscribe((status,error)=>{if(status==='SUBSCRIBED'){console.info('Shared workspace notification feed connected')}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){console.error('Shared workspace notification feed status:',status,error||'No additional error details.');toast('Shared workspace alerts lost their live connection. Check Realtime is enabled for group messages, task comments, and shared tasks, then reopen Settings.','error')}})}function syncUi(){$('syncStatus').textContent=!supa?'Cloud not configured':user?(accessGranted?'Signed in · '+user.email:'Signed in · access pending'):'Connected · sign in to sync';$('signOutBtn').disabled=!user;$('syncNowBtn').disabled=!user;if(user&&accessGranted)loadWorkspaces()}
+let workspaceActivityRefreshTimer = null;
+function queueWorkspaceActivityRefresh(workspaceId) {
+  const sections = workspaceHubSections;
+  if (!workspaceId || workspaceId !== activeWorkspaceId || !sections ||
+      sections.workspaceId !== workspaceId || !sections.activity || !user || !accessGranted) return;
+  if (workspaceActivityRefreshTimer !== null) clearTimeout(workspaceActivityRefreshTimer);
+  workspaceActivityRefreshTimer = setTimeout(() => {
+    workspaceActivityRefreshTimer = null;
+    if (!user || !accessGranted || workspaceHubSections !== sections || activeWorkspaceId !== workspaceId) return;
+    const workspace = workspaces.find(item => item.id === workspaceId);
+    if (workspace) void renderWorkspaceActivity(workspace, sections.activity);
+  }, 350);
+}
+
+function handleWorkspaceCollaborationRealtime(payload, kind) {
+  const row = payload?.new;
+  if (!row) return;
+  queueWorkspaceActivityRefresh(row.workspace_id);
+  const notificationsAllowed = prefs.groupNotifications &&
+    typeof window !== 'undefined' && 'Notification' in window &&
+    Notification.permission === 'granted';
+  if (!notificationsAllowed || row.created_by === user?.id) return;
+  const id = row.id || row.created_at || Date.now();
+  const message = kind === 'message'
+    ? 'A member posted a new group chat message.'
+    : kind === 'comment'
+      ? 'A member commented on a shared task.'
+      : 'A new shared task was added.';
+  void sendPlannerNotification('group:' + kind + ':' + id,
+    'UniPlanner · Shared workspace activity', message);
+}
+
+let groupNotificationChannel = null;
+function stopGroupNotificationFeed() {
+  if (groupNotificationChannel && supa) {
+    try { supa.removeChannel(groupNotificationChannel); }
+    catch (error) { console.warn('Could not stop group notification feed', error); }
+  }
+  groupNotificationChannel = null;
+}
+function startGroupNotificationFeed() {
+  stopGroupNotificationFeed();
+  // This channel also keeps the open workspace activity feed current. Browser
+  // notification permission controls alerts only, not foreground feed updates.
+  if (!supa || !user || !accessGranted) return;
+  groupNotificationChannel = supa.channel('uniplanner-group-notifications-' + user.id)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'uniplanner_group_messages' },
+      payload => handleWorkspaceCollaborationRealtime(payload, 'message'))
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'uniplanner_task_comments' },
+      payload => handleWorkspaceCollaborationRealtime(payload, 'comment'))
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'uniplanner_shared_tasks' },
+      payload => handleWorkspaceCollaborationRealtime(payload, 'task'))
+    .subscribe((status, error) => {
+      if (status === 'SUBSCRIBED') {
+        console.info('Shared workspace live activity feed connected');
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        console.error('Shared workspace Realtime status:', status, error || 'No additional error details.');
+        if (prefs.groupNotifications) {
+          toast('Shared workspace alerts lost their live connection. Check Realtime is enabled for group messages, task comments, and shared tasks, then reopen Settings.', 'error');
+        }
+      }
+    });
+}function syncUi(){$('syncStatus').textContent=!supa?'Cloud not configured':user?(accessGranted?'Signed in · '+user.email:'Signed in · access pending'):'Connected · sign in to sync';$('signOutBtn').disabled=!user;$('syncNowBtn').disabled=!user;if(user&&accessGranted)loadWorkspaces()}
 $('signInBtn').onclick=async()=>{if(!supa){toast('Secure sign-in is not available yet. Refresh and try again.','error');return}const email=$('syncEmail').value.trim(),password=$('syncPassword').value;if(!email||!password){toast('Enter your account email and password.','error');return}try{const {data:r,error}=await supa.auth.signInWithPassword({email,password});if(error)throw error;user=r.user;syncUi();const ok=await verifyAccess(false);if(ok)toast('Signed in. Sync is ready.')}catch(e){toast(e.message||'Sign-in failed. Check your credentials.','error')}};document.getElementById('gateLoginForm').onsubmit=async e=>{e.preventDefault();if(!supa){setGateMessage('Secure sign-in is still loading. Please wait a moment and try again.');return}const email=$('accessEmail').value.trim(),password=$('accessPassword').value;if(!email||!password)return;$('accessSignIn').disabled=true;setGateMessage('Signing in and checking approval…');try{const {data:r,error}=await supa.auth.signInWithPassword({email,password});if(error)throw error;user=r.user;syncUi();await verifyAccess(false)}catch(err){lockApp(/invalid login credentials/i.test(err.message||'')?'Email or password is incorrect.':'Sign-in failed: '+(err.message||'please try again.'))}finally{$('accessSignIn').disabled=false}};
 $('signOutBtn').onclick=async()=>{if(supa)await supa.auth.signOut();user=null;lockApp('Signed out. Sign in with an owner-approved account to continue.');toast('Signed out. Local data remains on this device.')};$('accessSignOut').onclick=async()=>{if(supa)await supa.auth.signOut();user=null;lockApp('Signed out. Sign in with an owner-approved account to continue.');$('accessPassword').value=''};
 async function cloudPull(){if(!supa||!user)return;try{$('syncStatus').textContent='Checking cloud…';const {data:r,error}=await supa.from('uniplanner_data').select('payload,updated_at').eq('user_id',user.id).maybeSingle();if(error)throw error;if(r&&r.payload){const local=Number(localStorage.getItem('uniplanner_v2_updated')||0),remote=Date.parse(r.updated_at)||0;if(remote>local){if(confirm('A newer backup exists in the cloud. Replace this device\'s data with the cloud copy? Export a backup first if unsure.')){data={...blank(),...r.payload,schema:SCHEMA};localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem('uniplanner_v2_updated',String(remote));renderAll();toast('Cloud data loaded.')}else toast('Kept this device\'s data. Use Sync now to upload it.')}else await cloudPush()}else await cloudPush();$('syncStatus').textContent='Synced · '+new Date().toLocaleTimeString()}catch(e){console.error(e);$('syncStatus').textContent='Sync failed';toast('Cloud sync failed: '+(e.message||'check table and RLS setup'),'error')}}
