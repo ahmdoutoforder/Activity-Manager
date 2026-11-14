@@ -76,6 +76,18 @@ function runAttendance(data) {
 
 {
   const data = {
+    grades: [{ id: 'grade-lab', course: 'Applied Physics', credits: 3 }],
+    attendance: [
+      { id: 'legacy-no-subject', course: 'Applied Physics', date: '2026-11-12', status: 'Present' }
+    ]
+  };
+  runAttendance(data);
+  assert.equal(data.attendanceCourses.length, 1, 'legacy course-name matching must avoid duplicate attendance classes');
+  assert.equal(data.attendance[0].subjectId, 'grade-lab', 'legacy records without subject IDs must link to the matching migrated attendance class');
+}
+
+{
+  const data = {
     grades: [],
     attendanceCourses: [
       { id: 'lecture-1', name: 'Applied Physics', type: 'Lecture' },
