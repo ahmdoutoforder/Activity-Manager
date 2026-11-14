@@ -25,6 +25,7 @@ function runAttendance(data) {
   for (const id of [
     'attendanceOverall','attendanceSessions','attendanceAtRisk',
     'attendanceThreshold','attendanceMinimumInput','attendanceCourseList',
+    'dashboardAttendanceOverall','dashboardAttendanceClasses','dashboardAttendanceSessions','dashboardApprovedLeave',
     'attendanceQuickList','attendanceHistory'
   ]) nodes[id] = { textContent: '', innerHTML: '', value: '' };
   const api = {
@@ -60,6 +61,10 @@ function runAttendance(data) {
   const { api, nodes } = runAttendance(data);
   assert.equal(nodes.attendanceOverall.textContent, '50%', 'approved leave and cancelled classes must not affect the percentage');
   assert.equal(nodes.attendanceSessions.textContent, 2, 'only present and absent sessions count');
+  assert.equal(nodes.dashboardAttendanceOverall.textContent, '50%');
+  assert.equal(nodes.dashboardAttendanceClasses.textContent, 1);
+  assert.equal(nodes.dashboardAttendanceSessions.textContent, 2);
+  assert.equal(nodes.dashboardApprovedLeave.textContent, 1);
   assert.match(nodes.attendanceQuickList.innerHTML, /1 approved leave/);
   assert.match(nodes.attendanceHistory.innerHTML, /Approved Leave/);
   assert.equal(data.attendanceCourses[0].id, 'course-programming', 'legacy attendance subject IDs must be preserved');
