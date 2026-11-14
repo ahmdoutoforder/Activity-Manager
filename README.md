@@ -5,15 +5,12 @@ UniPlanner is a static GitHub Pages university planner with a Supabase-backed ac
 ## What is included
 
 ### Personal planner
-- Overview with upcoming work and calendar
-- Tasks and deadlines
+- Overview with upcoming work, calendar and shared-workspace entry point
+- Independent attendance tracking for lectures and labs, including approved leave
+- Tasks and deadlines, including shared tasks assigned to the signed-in user
 - Calendar and weekly timetable
-- Grades and GPA tracking
-- Attendance tracking
-- Faculty directory
-- Personal notes and scratchpad
-- Focus timer
 - JSON backup export and import
+- Legacy Grades/GPA, faculty, notes and focus modules remain in the codebase for compatibility but are not part of the primary navigation direction
 
 ### Shared study workspaces
 - Workspace creation and membership
@@ -39,7 +36,7 @@ UniPlanner is a static GitHub Pages university planner with a Supabase-backed ac
 - Backend: Supabase Auth and PostgreSQL.
 - Personal planner data is stored as a per-user JSON payload in `uniplanner_data`.
 - Shared workspace content is stored in relational tables protected by RLS.
-- Attendance is part of the personal planner payload; it is not a separate attendance table.
+- Attendance classes and records are part of the personal planner payload; attendance is independent from Grades/GPA and distinguishes Lecture from Lab. Approved Leave and Cancelled sessions do not count as absences or attended sessions.
 - The browser uses a Supabase publishable key. Never place a Supabase service-role/secret key in frontend code.
 - The `admin-invite-user` Edge Function uses its service-role secret server-side and requires a verified caller token plus the owner/admin check.
 

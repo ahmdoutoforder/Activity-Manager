@@ -18,6 +18,8 @@ jobs:
           const fs = require('node:fs');
           const { execFileSync } = require('node:child_process');
           const html = fs.readFileSync('index.html', 'utf8');
+          const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
+          if (manifest.theme_color !== '#09070d') throw new Error('PWA theme color must match the obsidian product shell');
           const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
             .map(match => match[1].trim())
             .filter(Boolean);
@@ -34,9 +36,38 @@ jobs:
             'id="timerStart"',
             'id="dashAssignedWorkspaceTasks"',
             'id="assignedWorkspaceTasksList"',
-            'data-assigned-workspace-task'
+            'id="dashboardAttendanceOverall"',
+            'id="dashboardAttendanceClasses"',
+            'id="dashboardAttendanceSessions"',
+            'id="dashboardApprovedLeave"',
+            'id="dashboardWorkspaceCard"',
+            'timetable-day-group',
+            'timetable-class-card',
+            'id="dashboardTodayClasses"',
+            'data-assigned-workspace-task',
+            'async function renderWorkspaceActivity',
+            'id = \'workspaceRecentActivity\'',
+            "from('uniplanner_group_messages')",
+            "from('uniplanner_task_comments')"
           ]) {
             if (!html.includes(marker)) throw new Error(`Missing required UI element/behavior marker: ${marker}`);
+          }
+
+          const sidebar = html.match(/<aside class="sidebar"[\s\S]*?<\/aside>/i)?.[0] || '';
+          for (const page of ['dashboard', 'collaborate', 'attendance', 'tasks', 'timetable', 'calendar', 'settings']) {
+            if (!sidebar.includes('data-page="' + page + '"')) throw new Error('Missing primary navigation page: ' + page);
+          }
+          for (const legacyPage of ['grades', 'faculty', 'focus', 'notes']) {
+            if (sidebar.includes('data-page="' + legacyPage + '"')) throw new Error('Legacy page must not appear in primary navigation: ' + legacyPage);
+          }
+          const dashboardStart = html.indexOf('id="page-dashboard"');
+          const dashboardEnd = html.indexOf('<section class="page" id="page-calendar"', dashboardStart);
+          const dashboard = html.slice(dashboardStart, dashboardEnd);
+          if (/data-goto="(?:grades|faculty|focus|notes)"/.test(dashboard)) throw new Error('Legacy destinations must not appear in dashboard quick actions');
+          const workspaceCardIndex = html.indexOf('id="dashboardWorkspaceCard"', dashboardStart);
+          const attentionIndex = html.indexOf('<section class="attention-panel"', dashboardStart);
+          if (workspaceCardIndex < dashboardStart || attentionIndex < 0 || workspaceCardIndex > attentionIndex) {
+            throw new Error('The shared-workspace card must appear before personal task attention on the dashboard');
           }
 
           const projectMigration = fs.readFileSync('workspace-project-task-link-migration.sql', 'utf8').toLowerCase();
@@ -129,6 +160,12 @@ jobs:
 
           console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, assignment/storage safeguards, and workspace cleanup worker.`);
           NODE
+
+      - name: Check external JavaScript syntax
+        run: node --check semester-upgrade.js
+
+      - name: Test attendance independence and approved leave
+        run: node tests/attendance-independence.test.js
 
       - name: Test workspace Storage cleanup worker
         run: node tests/workspace-storage-cleanup.test.js

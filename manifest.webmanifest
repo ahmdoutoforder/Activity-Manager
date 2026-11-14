@@ -1,12 +1,12 @@
 {
   "name": "UniPlanner",
   "short_name": "UniPlanner",
-  "description": "Your semester, in control.",
+  "description": "Study together. Stay on track with shared workspaces, attendance and deadlines.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#090d18",
-  "theme_color": "#090d18",
+  "background_color": "#09070d",
+  "theme_color": "#09070d",
   "icons": [
     {
       "src": "./notification-icon.svg",
