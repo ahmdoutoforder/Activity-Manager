@@ -51,7 +51,8 @@ const rows = build({
 assert.equal(rows[0].kind, 'submission', 'newest submission should appear first');
 assert.equal(rows[0].context, 'submitted work for PF Assignment 2');
 assert.equal(rows[1].kind, 'chat');
-assert.equal(rows[2].kind, 'assignment-resource');
+assert.equal(rows[2].kind, 'note');
+assert.equal(rows[3].kind, 'assignment-resource');
 assert.equal(rows.find(item => item.kind === 'comment').context, 'commented on Lab report');
 assert.equal(rows.find(item => item.kind === 'task').subject, 'Lab report');
 
