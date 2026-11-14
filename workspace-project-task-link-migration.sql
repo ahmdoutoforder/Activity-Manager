@@ -28,6 +28,10 @@ $migration$;
 create index if not exists uniplanner_shared_tasks_project_due
   on public.uniplanner_shared_tasks(workspace_id, project_id, due_date);
 
+-- PostgreSQL needs an index whose leading column covers the project_id foreign key.
+create index if not exists uniplanner_shared_tasks_project_link_idx
+  on public.uniplanner_shared_tasks(project_id);
+
 comment on column public.uniplanner_shared_tasks.project_id is
   'Optional project link. The task must belong to the same workspace as the linked project.';
 
