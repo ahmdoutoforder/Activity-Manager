@@ -172,3 +172,6 @@ jobs:
 
       - name: Test workspace activity feed aggregation
         run: node tests/workspace-activity-feed.test.js
+
+      - name: Test live workspace activity refresh
+        run: node tests/workspace-realtime-refresh.test.js
