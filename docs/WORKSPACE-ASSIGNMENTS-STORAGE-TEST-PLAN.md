@@ -22,10 +22,11 @@
 3. `workspace-assignment-submission-status-migration.sql` — makes Postgres reject both Storage uploads and submission rows when an assignment is closed or archived.
 4. `workspace-storage-cleanup-migration.sql` — records a requester-scoped cleanup job in the same transaction as workspace deletion, then permits only that requester or a site admin to list/delete the deleted workspace's private Storage objects.
 
-All three migrations have been applied and recorded only in the isolated Supabase project `uniplanner test` under migration names:
+All four migrations have been applied and recorded only in the isolated Supabase project `uniplanner test` under migration names:
 - `workspace_assignments_private_storage`
 - `workspace_assignment_fk_indexes`
 - `workspace_assignment_submission_status`
+- `workspace_storage_cleanup_jobs`
 
 No production Supabase schema, bucket, Storage object or user data was changed by this phase.
 
