@@ -682,3 +682,18 @@ body {
   .timetable-class-card { grid-template-columns:66px minmax(0,1fr) auto; gap:7px; padding:8px; }
   .timetable-class-time { padding:7px 4px; }
 }
+
+.dashboard-today-classes { display:flex; flex-direction:column; gap:8px; }
+.dashboard-class-row {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border:1px solid #30243d;
+  border-radius:10px; background:#100c15; min-width:0;
+}
+.dashboard-class-time {
+  flex:0 0 58px; padding:7px 5px; border-radius:8px;
+  text-align:center; background:#251a32; color:#e3d1ff;
+  font-size:10px; font-weight:800;
+}
+.dashboard-class-copy { min-width:0; display:flex; flex-direction:column; gap:4px; }
+.dashboard-class-copy strong { color:#eee5f8; font-size:11px; overflow-wrap:anywhere; }
+.dashboard-class-copy small { color:#9d90aa; font-size:9px; overflow-wrap:anywhere; }
