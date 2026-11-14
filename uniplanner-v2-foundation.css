@@ -501,3 +501,18 @@ body {
   .nav-priority-dot { display: none; }
   .top { padding: 12px; border-radius: 16px; }
 }
+
+/* Independent attendance classes and excused leave. */
+.attendance-course-form { align-items: center; }
+.attendance-course-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 8px; margin-top: 12px; }
+.attendance-course-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid #392d47; border-radius:11px; background:#120e18; }
+.attendance-course-row strong,.attendance-course-row small { display:block; }
+.attendance-course-row strong { font-size:11px; color:#eee5f8; }
+.attendance-course-row small { margin-top:4px; font-size:10px; color:#a096ae; }
+.attendance-course-row .mini { font-size:17px; }
+.attendance-subject { border:1px solid #392d47; border-radius:14px; padding:14px; background:linear-gradient(145deg,#17111f,#100c14); }
+.attendance-subject-head { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+.attendance-subject-head strong,.attendance-subject-head span { display:block; }
+.attendance-subject-head strong { font-size:13px; }
+.attendance-subject-head span { margin-top:4px; font-size:10px; color:#a096ae; }
+@media(max-width:700px){.attendance-course-form{align-items:stretch}.attendance-course-form .search,.attendance-course-form .btn{width:100%}.attendance-course-list{grid-template-columns:1fr}.attendance-buttons .btn{min-width:42%;}}
