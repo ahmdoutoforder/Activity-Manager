@@ -49,5 +49,56 @@ jobs:
             if (!projectMigration.includes(marker)) throw new Error(`Missing project-task migration safeguard: ${marker}`);
           }
 
-          console.log(`Validated ${scripts.length} inline script(s), required UI markers, and project-task migration safeguards.`);
+          const assignmentUiMarkers = [
+            'data-wtab="assignments"',
+            "panel.id='workspaceAssignmentsPanel'",
+            'ASSIGNMENT_FILE_BUCKET',
+            'const upload=await storage.upload',
+            '.storage.from(ASSIGNMENT_FILE_BUCKET).download',
+            'upsert:false',
+            'data-assignment-submit',
+            'data-assignment-download'
+          ];
+          for (const marker of assignmentUiMarkers) {
+            if (!html.includes(marker)) throw new Error(`Missing assignment UI behavior marker: ${marker}`);
+          }
+
+          const assignmentMigration = fs.readFileSync('workspace-assignments-storage-migration.sql', 'utf8').toLowerCase();
+          for (const marker of [
+            "insert into storage.buckets",
+            "'uniplanner-workspace-files'",
+            'public, file_size_limit, allowed_mime_types',
+            '20971520',
+            'create table if not exists public.uniplanner_assignments',
+            'create table if not exists public.uniplanner_assignment_resources',
+            'create table if not exists public.uniplanner_assignment_submissions',
+            'alter table public.uniplanner_assignments enable row level security',
+            'alter table public.uniplanner_assignment_resources enable row level security',
+            'alter table public.uniplanner_assignment_submissions enable row level security',
+            'on storage.objects for select',
+            'on storage.objects for insert',
+            'storage.foldername(name)',
+            'submitted_by'
+          ]) {
+            if (!assignmentMigration.includes(marker)) throw new Error(`Missing assignment/storage migration safeguard: ${marker}`);
+          }
+
+          const assignmentIndexes = fs.readFileSync('workspace-assignment-indexes-migration.sql', 'utf8').toLowerCase();
+          for (const marker of [
+            'uniplanner_assignment_resources_assignment_id_idx',
+            'uniplanner_assignment_resources_uploaded_by_idx',
+            'uniplanner_assignment_submissions_assignment_id_idx',
+            'uniplanner_assignments_created_by_idx'
+          ]) {
+            if (!assignmentIndexes.includes(marker)) throw new Error(`Missing assignment FK index: ${marker}`);
+          }
+
+          const submissionStatusMigration = fs.readFileSync('workspace-assignment-submission-status-migration.sql', 'utf8').toLowerCase();
+          if (!submissionStatusMigration.includes("a.status = 'open'") ||
+              !submissionStatusMigration.includes('on storage.objects for insert') ||
+              !submissionStatusMigration.includes('on public.uniplanner_assignment_submissions for insert')) {
+            throw new Error('Missing closed-assignment submission policy safeguards');
+          }
+
+          console.log(`Validated ${scripts.length} inline script(s), workspace UI behavior, and assignment/storage migration safeguards.`);
           NODE

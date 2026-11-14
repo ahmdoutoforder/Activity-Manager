@@ -876,6 +876,7 @@ loadWorkspaceTasks = async function() {
   quick.className = 'workspace-quick-grid';
   [
     ['tasks', 'Shared tasks', 'Plan and assign group work'],
+    ['assignments', 'Assignments', 'Share instructions and submissions'],
     ['projects', 'Projects', 'Track larger assignments'],
     ['resources', 'Notes & resources', 'Build a shared study library'],
     ['chat', 'Group chat', 'Keep everyone in the loop'],
@@ -902,6 +903,7 @@ loadWorkspaceTasks = async function() {
   tabs.dataset.hubVersion = '2';
   tabs.innerHTML = '<button class="btn" type="button" data-wtab="overview">Overview</button>' +
     '<button class="btn" type="button" data-wtab="tasks">Tasks</button>' +
+    '<button class="btn" type="button" data-wtab="assignments">Assignments</button>' +
     '<button class="btn" type="button" data-wtab="projects">Projects</button>' +
     '<button class="btn" type="button" data-wtab="resources">Notes &amp; resources</button>' +
     '<button class="btn" type="button" data-wtab="discussion">Task discussion</button>' +
@@ -1122,6 +1124,364 @@ const loadWorkspaceTasksBeforeAssignedInbox=loadWorkspaceTasks;
 loadWorkspaceTasks=async function(){
  await loadWorkspaceTasksBeforeAssignedInbox();
  await renderAssignedWorkspaceTasks();
+};
+
+
+/* Workspace assignments and private file storage. */
+const showWorkspaceTabBeforeAssignments = showWorkspaceTab;
+const ASSIGNMENT_FILE_BUCKET = 'uniplanner-workspace-files';
+const ASSIGNMENT_FILE_LIMIT = 20 * 1024 * 1024;
+const ASSIGNMENT_ALLOWED_MIMES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+  'application/json',
+  'application/zip',
+  'application/x-zip-compressed',
+  'image/png',
+  'image/jpeg'
+]);
+const ASSIGNMENT_EXTENSION_MIMES = {
+  pdf:'application/pdf',
+  doc:'application/msword',
+  docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ppt:'application/vnd.ms-powerpoint',
+  pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  xls:'application/vnd.ms-excel',
+  xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  txt:'text/plain',
+  csv:'text/csv',
+  json:'application/json',
+  zip:'application/zip',
+  png:'image/png',
+  jpg:'image/jpeg',
+  jpeg:'image/jpeg'
+};
+let workspaceAssignmentsRequest = 0;
+
+function assignmentFileMime(file){
+  const ext = String(file.name.split('.').pop() || '').toLowerCase();
+  const reported = file.type || '';
+  const mime = ASSIGNMENT_ALLOWED_MIMES.has(reported) ? reported : (ASSIGNMENT_EXTENSION_MIMES[ext] || '');
+  return ASSIGNMENT_ALLOWED_MIMES.has(mime) ? mime : '';
+}
+
+function assignmentFileExtension(file){
+  const ext = String(file.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,10);
+  return ext || 'file';
+}
+
+function assignmentFileSize(size){
+  return size < 1024 * 1024
+    ? Math.max(1,Math.round(size/1024)) + ' KB'
+    : (size/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function assignmentDownload(path, fileName){
+  return (async()=>{
+    try{
+      const {data,error}=await supa.storage.from(ASSIGNMENT_FILE_BUCKET).download(path);
+      if(error)throw error;
+      const url=URL.createObjectURL(data);
+      const link=document.createElement('a');
+      link.href=url;
+      link.download=fileName || 'assignment-file';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }catch(error){
+      toast('Could not download file: '+(error.message||'Unknown error'),'error');
+    }
+  })();
+}
+
+async function renderWorkspaceAssignments(w,overview,extra){
+  const request=++workspaceAssignmentsRequest;
+  workspaceTab='assignments';
+  document.querySelectorAll('#workspaceContent .workspace-tabs [data-wtab]').forEach(button=>{
+    button.classList.toggle('primary',button.dataset.wtab==='assignments');
+  });
+  overview.hidden=true;
+  extra.replaceChildren();
+
+  const panel=document.createElement('section');
+  panel.id='workspaceAssignmentsPanel';
+  panel.className='panel workspace-assignments-panel';
+  panel.innerHTML=
+    '<div class="panel-head"><div><h3>Assignments</h3><p class="sub">Instructions, original files and individual submissions. Every workspace member can view and download submissions.</p></div><span class="tag">Private files</span></div>'+
+    '<div class="workspace-assignment-create">'+
+      '<div class="field"><label for="workspaceAssignmentTitle">Assignment title</label><input id="workspaceAssignmentTitle" maxlength="160" placeholder="e.g. Programming Fundamentals — Assignment 2"></div>'+
+      '<div class="field"><label for="workspaceAssignmentInstructions">Instructions</label><textarea id="workspaceAssignmentInstructions" rows="3" maxlength="10000" placeholder="Describe the requirements, deliverables and submission details…"></textarea></div>'+
+      '<div class="formgrid"><div class="field"><label for="workspaceAssignmentDue">Due date and time (optional)</label><input id="workspaceAssignmentDue" type="datetime-local"></div><div class="field"><label for="workspaceAssignmentProject">Linked project (optional)</label><select id="workspaceAssignmentProject"><option value="">No project</option></select></div></div>'+
+      '<button class="btn primary" id="workspaceAssignmentCreate" type="button">＋ Create assignment</button>'+
+    '</div>'+
+    '<div class="divider"></div>'+
+    '<div class="task-list" id="workspaceAssignmentsList"><div class="empty">Loading assignments…</div></div>';
+  extra.appendChild(panel);
+
+  try{
+    const [assignmentsResult,resourcesResult,submissionsResult,membersResult,projectsResult]=await Promise.all([
+      supa.from('uniplanner_assignments')
+        .select('id,workspace_id,project_id,created_by,title,instructions,due_at,status,created_at,updated_at')
+        .eq('workspace_id',w.id)
+        .order('created_at',{ascending:false}),
+      supa.from('uniplanner_assignment_resources')
+        .select('id,workspace_id,assignment_id,uploaded_by,storage_path,original_file_name,mime_type,file_size_bytes,created_at')
+        .eq('workspace_id',w.id)
+        .order('created_at',{ascending:false}),
+      supa.from('uniplanner_assignment_submissions')
+        .select('id,workspace_id,assignment_id,submitted_by,storage_path,original_file_name,mime_type,file_size_bytes,note,submitted_at')
+        .eq('workspace_id',w.id)
+        .order('submitted_at',{ascending:false}),
+      supa.from('uniplanner_workspace_members')
+        .select('user_id,role')
+        .eq('workspace_id',w.id),
+      supa.from('uniplanner_projects')
+        .select('id,title')
+        .eq('workspace_id',w.id)
+        .order('created_at',{ascending:false})
+    ]);
+    for(const result of [assignmentsResult,resourcesResult,submissionsResult,membersResult,projectsResult]){
+      if(result.error)throw result.error;
+    }
+    if(request!==workspaceAssignmentsRequest || !panel.isConnected)return;
+
+    const assignments=assignmentsResult.data||[];
+    const resources=resourcesResult.data||[];
+    const submissions=submissionsResult.data||[];
+    const members=membersResult.data||[];
+    const projects=projectsResult.data||[];
+    const myRole=members.find(member=>member.user_id===user.id)?.role||'member';
+    const isWorkspaceOwner=myRole==='owner';
+    const profiles=await loadWorkspaceProfiles([
+      ...members.map(member=>member.user_id),
+      ...assignments.map(assignment=>assignment.created_by),
+      ...resources.map(resource=>resource.uploaded_by),
+      ...submissions.map(submission=>submission.submitted_by)
+    ]);
+    if(request!==workspaceAssignmentsRequest || !panel.isConnected)return;
+    const nameFor=id=>profiles.get(id)||(id===user.id?prefs.displayName:'')||'Member';
+    const projectById=new Map(projects.map(project=>[project.id,project]));
+    const projectSelect=$('workspaceAssignmentProject');
+    if(projectSelect){
+      projectSelect.innerHTML='<option value="">No project</option>'+projects.map(project=>'<option value="'+esc(project.id)+'">'+esc(project.title)+'</option>').join('');
+    }
+
+    const resourcesByAssignment=new Map();
+    resources.forEach(resource=>{
+      const group=resourcesByAssignment.get(resource.assignment_id)||[];
+      group.push(resource);
+      resourcesByAssignment.set(resource.assignment_id,group);
+    });
+    const submissionsByAssignment=new Map();
+    submissions.forEach(submission=>{
+      const group=submissionsByAssignment.get(submission.assignment_id)||[];
+      group.push(submission);
+      submissionsByAssignment.set(submission.assignment_id,group);
+    });
+    const versions=new Map();
+    [...submissions].sort((a,b)=>String(a.submitted_at).localeCompare(String(b.submitted_at))).forEach(submission=>{
+      const key=submission.assignment_id+':'+submission.submitted_by;
+      versions.set(submission.id,(versions.get(key)||0)+1);
+      versions.set(key,versions.get(key));
+    });
+
+    const list=$('workspaceAssignmentsList');
+    list.innerHTML=assignments.length?assignments.map(assignment=>{
+      const assignmentResources=resourcesByAssignment.get(assignment.id)||[];
+      const assignmentSubmissions=submissionsByAssignment.get(assignment.id)||[];
+      const canManage=isWorkspaceOwner||assignment.created_by===user.id;
+      const due=assignment.due_at?new Date(assignment.due_at).toLocaleString():'No due date';
+      const project=assignment.project_id?projectById.get(assignment.project_id)?.title||'Linked project':'';
+      const resourceHtml=assignmentResources.length?assignmentResources.map(resource=>
+        '<div class="assignment-file-row"><div><strong>'+esc(resource.original_file_name)+'</strong><span>'+esc(assignmentFileSize(Number(resource.file_size_bytes)))+' · '+esc(nameFor(resource.uploaded_by))+' · '+esc(new Date(resource.created_at).toLocaleDateString())+'</span></div><div class="row"><button class="btn" type="button" data-assignment-download="'+esc(resource.id)+'" data-file-path="'+esc(resource.storage_path)+'" data-file-name="'+esc(resource.original_file_name)+'">Download</button>'+((resource.uploaded_by===user.id||canManage)?'<button class="mini" type="button" data-assignment-remove-resource="'+esc(resource.id)+'" data-file-path="'+esc(resource.storage_path)+'" aria-label="Remove assignment resource">✕</button>':'')+'</div></div>'
+      ).join(''):'<div class="empty assignment-inline-empty">No original files attached yet.</div>';
+      const submissionHtml=assignmentSubmissions.length?assignmentSubmissions.map(submission=>
+        '<div class="assignment-file-row"><div><strong>'+esc(submission.original_file_name)+'</strong><span>'+esc(nameFor(submission.submitted_by))+' · Version '+esc(versions.get(submission.id)||1)+' · '+esc(new Date(submission.submitted_at).toLocaleString())+' · '+esc(assignmentFileSize(Number(submission.file_size_bytes)))+'</span>'+(submission.note?'<small>'+esc(submission.note)+'</small>':'')+'</div><div class="row"><button class="btn" type="button" data-assignment-download="'+esc(submission.id)+'" data-file-path="'+esc(submission.storage_path)+'" data-file-name="'+esc(submission.original_file_name)+'">Download</button>'+(submission.submitted_by===user.id?'<button class="mini" type="button" data-assignment-remove-submission="'+esc(submission.id)+'" data-file-path="'+esc(submission.storage_path)+'" aria-label="Remove your submission">✕</button>':'')+'</div></div>'
+      ).join(''):'<div class="empty assignment-inline-empty">No submissions yet. Be the first to submit.</div>';
+      return '<article class="workspace-assignment-card" data-assignment-card="'+esc(assignment.id)+'">'+
+        '<div class="workspace-assignment-heading"><div><div class="row"><span class="tag">'+esc(assignment.status)+'</span>'+(project?'<span class="tag">'+esc(project)+'</span>':'')+'</div><h4>'+esc(assignment.title)+'</h4><p class="sub">Due: '+esc(due)+' · Created by '+esc(nameFor(assignment.created_by))+'</p></div>'+
+        (canManage?'<button class="btn" type="button" data-assignment-toggle="'+esc(assignment.id)+'" data-next-status="'+(assignment.status==='open'?'closed':'open')+'">'+(assignment.status==='open'?'Close submissions':'Reopen submissions')+'</button>':'')+
+        '</div>'+
+        (assignment.instructions?'<p class="assignment-instructions">'+esc(assignment.instructions)+'</p>':'')+
+        '<section class="assignment-files"><h5>Original files and instructions</h5>'+resourceHtml+
+        (canManage?'<div class="assignment-upload-row"><input type="file" data-assignment-resource-file="'+esc(assignment.id)+'" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv,.json,.zip,.png,.jpg,.jpeg"><button class="btn" type="button" data-assignment-upload-resource="'+esc(assignment.id)+'">＋ Attach original file</button></div>':'')+
+        '</section>'+
+        '<section class="assignment-files"><div class="panel-head"><div><h5>Student submissions</h5><p class="sub">Visible to all members of this workspace. Each upload is kept as a separate version.</p></div><span class="tag">'+assignmentSubmissions.length+' file'+(assignmentSubmissions.length===1?'':'s')+'</span></div>'+submissionHtml+
+        (assignment.status==='open'?'<div class="assignment-submit-box"><div class="field"><label>Upload your submission</label><input type="file" data-assignment-submission-file="'+esc(assignment.id)+'" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv,.json,.zip,.png,.jpg,.jpeg"></div><div class="field"><label>Note (optional)</label><input type="text" data-assignment-submission-note="'+esc(assignment.id)+'" maxlength="3000" placeholder="Brief message about this version"></div><button class="btn primary" type="button" data-assignment-submit="'+esc(assignment.id)+'">Submit file</button><p class="sub">Uploading another version keeps the previous submission; it does not overwrite it.</p></div>':'<p class="sub">Submissions are closed for this assignment.</p>')+
+        '</section></article>';
+    }).join(''):'<div class="empty">No assignments yet. Create the first assignment for this workspace.</div>';
+
+    $('workspaceAssignmentCreate').onclick=async()=>{
+      const title=$('workspaceAssignmentTitle').value.trim();
+      if(!title){toast('Enter an assignment title.','error');return}
+      const dueValue=$('workspaceAssignmentDue').value;
+      let dueAt=null;
+      if(dueValue){
+        const parsed=new Date(dueValue);
+        if(!Number.isFinite(parsed.getTime())){toast('Choose a valid due date and time.','error');return}
+        dueAt=parsed.toISOString();
+      }
+      const button=$('workspaceAssignmentCreate');
+      button.disabled=true;
+      try{
+        const {error}=await supa.from('uniplanner_assignments').insert({
+          workspace_id:w.id,
+          project_id:$('workspaceAssignmentProject').value||null,
+          created_by:user.id,
+          title,
+          instructions:$('workspaceAssignmentInstructions').value.trim(),
+          due_at:dueAt
+        });
+        if(error)throw error;
+        toast('Assignment created.');
+        await renderWorkspaceAssignments(w,overview,extra);
+      }catch(error){
+        toast('Could not create assignment: '+(error.message||'Unknown error'),'error');
+        button.disabled=false;
+      }
+    };
+
+    extra.querySelectorAll('[data-assignment-download]').forEach(button=>{
+      button.onclick=()=>assignmentDownload(button.dataset.filePath,button.dataset.fileName);
+    });
+
+    extra.querySelectorAll('[data-assignment-toggle]').forEach(button=>{
+      button.onclick=async()=>{
+        const next=button.dataset.nextStatus;
+        button.disabled=true;
+        try{
+          const {error}=await supa.from('uniplanner_assignments')
+            .update({status:next,updated_at:new Date().toISOString()})
+            .eq('id',button.dataset.assignmentToggle)
+            .eq('workspace_id',w.id);
+          if(error)throw error;
+          toast(next==='closed'?'Submissions closed.':'Submissions reopened.');
+          await renderWorkspaceAssignments(w,overview,extra);
+        }catch(error){
+          toast('Could not update assignment: '+(error.message||'Unknown error'),'error');
+          button.disabled=false;
+        }
+      };
+    });
+
+    async function uploadAssignmentFile(assignmentId,file,kind,note){
+      if(!file){toast('Choose a file first.','error');return}
+      if(file.size<1||file.size>ASSIGNMENT_FILE_LIMIT){
+        toast('Files must be between 1 byte and 20 MB.','error');
+        return;
+      }
+      const mime=assignmentFileMime(file);
+      if(!mime){
+        toast('This file type is not supported. Use PDF, Office documents, text/CSV/JSON, ZIP, PNG or JPEG.','error');
+        return;
+      }
+      const extension=assignmentFileExtension(file);
+      const token=uid().replace(/[^a-zA-Z0-9-]/g,'');
+      const folder=kind==='resource'?'resources':'submissions/'+user.id;
+      const path=w.id+'/'+assignmentId+'/'+folder+'/'+token+'.'+extension;
+      const storage=supa.storage.from(ASSIGNMENT_FILE_BUCKET);
+      const upload=await storage.upload(path,file,{cacheControl:'3600',upsert:false,contentType:mime});
+      if(upload.error)throw upload.error;
+      const metadata=kind==='resource'
+        ? {workspace_id:w.id,assignment_id:assignmentId,uploaded_by:user.id,storage_path:path,original_file_name:file.name,mime_type:mime,file_size_bytes:file.size}
+        : {workspace_id:w.id,assignment_id:assignmentId,submitted_by:user.id,storage_path:path,original_file_name:file.name,mime_type:mime,file_size_bytes:file.size,note:note||''};
+      const table=kind==='resource'?'uniplanner_assignment_resources':'uniplanner_assignment_submissions';
+      const inserted=await supa.from(table).insert(metadata);
+      if(inserted.error){
+        await storage.remove([path]).catch(()=>{});
+        throw inserted.error;
+      }
+    }
+
+    extra.querySelectorAll('[data-assignment-upload-resource]').forEach(button=>{
+      button.onclick=async()=>{
+        const assignmentId=button.dataset.assignmentUploadResource;
+        const input=extra.querySelector('[data-assignment-resource-file="'+assignmentId+'"]');
+        const file=input?.files?.[0];
+        button.disabled=true;
+        try{
+          await uploadAssignmentFile(assignmentId,file,'resource','');
+          toast('Original file attached.');
+          await renderWorkspaceAssignments(w,overview,extra);
+        }catch(error){
+          toast('Could not upload original file: '+(error.message||'Unknown error'),'error');
+          button.disabled=false;
+        }
+      };
+    });
+
+    extra.querySelectorAll('[data-assignment-submit]').forEach(button=>{
+      button.onclick=async()=>{
+        const assignmentId=button.dataset.assignmentSubmit;
+        const input=extra.querySelector('[data-assignment-submission-file="'+assignmentId+'"]');
+        const note=extra.querySelector('[data-assignment-submission-note="'+assignmentId+'"]')?.value.trim()||'';
+        const file=input?.files?.[0];
+        button.disabled=true;
+        try{
+          await uploadAssignmentFile(assignmentId,file,'submission',note);
+          toast('Submission uploaded. Earlier versions remain available.');
+          await renderWorkspaceAssignments(w,overview,extra);
+        }catch(error){
+          toast('Could not submit file: '+(error.message||'Unknown error'),'error');
+          button.disabled=false;
+        }
+      };
+    });
+
+    async function removeAssignmentFile(table,id,path){
+      const removed=await supa.storage.from(ASSIGNMENT_FILE_BUCKET).remove([path]);
+      if(removed.error)throw removed.error;
+      const {error}=await supa.from(table).delete().eq('id',id).eq('workspace_id',w.id);
+      if(error)throw error;
+    }
+
+    extra.querySelectorAll('[data-assignment-remove-resource]').forEach(button=>{
+      button.onclick=async()=>{
+        if(!confirm('Remove this original assignment file?'))return;
+        button.disabled=true;
+        try{
+          await removeAssignmentFile('uniplanner_assignment_resources',button.dataset.assignmentRemoveResource,button.dataset.filePath);
+          toast('Original file removed.');
+          await renderWorkspaceAssignments(w,overview,extra);
+        }catch(error){
+          toast('Could not remove file: '+(error.message||'Unknown error'),'error');
+          button.disabled=false;
+        }
+      };
+    });
+
+    extra.querySelectorAll('[data-assignment-remove-submission]').forEach(button=>{
+      button.onclick=async()=>{
+        if(!confirm('Remove your submission version? Other members will no longer see this version.'))return;
+        button.disabled=true;
+        try{
+          await removeAssignmentFile('uniplanner_assignment_submissions',button.dataset.assignmentRemoveSubmission,button.dataset.filePath);
+          toast('Your submission version was removed.');
+          await renderWorkspaceAssignments(w,overview,extra);
+        }catch(error){
+          toast('Could not remove submission: '+(error.message||'Unknown error'),'error');
+          button.disabled=false;
+        }
+      };
+    });
+
+  }catch(error){
+    if(request!==workspaceAssignmentsRequest || !panel.isConnected)return;
+    panel.innerHTML='<h3>Assignments</h3><div class="empty">Could not load assignments. Confirm the workspace assignments and private Storage migration is installed. '+esc(error.message||'')+'</div>';
+  }
+}
+
+showWorkspaceTab = async function(tab,w,overview,extra){
+  if(tab!=='assignments')return showWorkspaceTabBeforeAssignments(tab,w,overview,extra);
+  return renderWorkspaceAssignments(w,overview,extra);
 };
 
 
