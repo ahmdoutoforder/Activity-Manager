@@ -12,7 +12,7 @@ const bucketName = 'uniplanner-workspace-files';
 const workspaceId = '11111111-1111-4111-8111-111111111111';
 const memberId = '22222222-2222-4222-8222-222222222222';
 
-function createWorker({ removeFails = false, invalidPath = false, missingQueue = false } = {}) {
+function createWorker({ removeFails = false, listFails = false, invalidPath = false, missingQueue = false } = {}) {
   let jobDeleted = false;
   const removeCalls = [];
   const listCalls = [];
@@ -24,6 +24,7 @@ function createWorker({ removeFails = false, invalidPath = false, missingQueue =
   const bucket = {
     async list(prefix, options = {}) {
       listCalls.push({ prefix, limit: options.limit, offset: options.offset || 0 });
+      if (listFails) return { data: null, error: { message: 'simulated Storage listing failure' } };
       if (prefix === workspaceId) {
         return { data: [{ name: 'assignment-1', id: null }], error: null };
       }
@@ -131,6 +132,15 @@ function createWorker({ removeFails = false, invalidPath = false, missingQueue =
     assert.equal(result.completed, 0);
     assert.equal(result.failed, 1);
     assert.equal(fixture.jobDeleted, false, 'failed deletion must leave its job queued');
+  }
+
+  {
+    const fixture = createWorker({ listFails: true });
+    const result = await fixture.run();
+    assert.equal(result.completed, 0);
+    assert.equal(result.failed, 1);
+    assert.equal(fixture.removeCalls.length, 0, 'listing failure must prevent all removals');
+    assert.equal(fixture.jobDeleted, false, 'listing failure must leave its job queued');
   }
 
   {
