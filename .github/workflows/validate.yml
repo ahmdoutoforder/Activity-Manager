@@ -51,9 +51,9 @@ jobs:
 
           const assignmentUiMarkers = [
             'data-wtab="assignments"',
-            'id="workspaceAssignmentsPanel"',
+            "panel.id='workspaceAssignmentsPanel'",
             'ASSIGNMENT_FILE_BUCKET',
-            '.storage.from(ASSIGNMENT_FILE_BUCKET).upload',
+            'const upload=await storage.upload',
             '.storage.from(ASSIGNMENT_FILE_BUCKET).download',
             'upsert:false',
             'data-assignment-submit',
