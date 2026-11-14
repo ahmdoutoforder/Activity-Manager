@@ -82,7 +82,7 @@ const feedEnd = html.indexOf('\nasync function loadWorkspaceHubMembers', feedSta
 assert.ok(feedStart >= 0 && feedEnd > feedStart, 'activity feed loader must exist');
 const feedSource = html.slice(feedStart, feedEnd);
 assert.equal(
-  (feedSource.match(/\\.limit\\(WORKSPACE_ACTIVITY_FEED_LIMIT\\)/g) || []).length,
+  (feedSource.match(/\.limit\(WORKSPACE_ACTIVITY_FEED_LIMIT\)/g) || []).length,
   5,
   'each fixed-size event source must query at least the number of rows displayed in the feed'
 );
@@ -91,7 +91,7 @@ const optionalEnd = html.indexOf('\nasync function renderWorkspaceActivity', opt
 assert.ok(optionalStart >= 0 && optionalEnd > optionalStart, 'optional assignment reads must exist');
 assert.match(
   html.slice(optionalStart, optionalEnd),
-  /\\.limit\\(WORKSPACE_ACTIVITY_FEED_LIMIT\\)/,
+  /\.limit\(WORKSPACE_ACTIVITY_FEED_LIMIT\)/,
   'optional assignment sources must use the same event window'
 );
 
