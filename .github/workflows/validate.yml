@@ -57,7 +57,7 @@ jobs:
             if (sidebar.includes('data-page="' + legacyPage + '"')) throw new Error('Legacy page must not appear in primary navigation: ' + legacyPage);
           }
           const dashboardStart = html.indexOf('id="page-dashboard"');
-          const dashboardEnd = html.indexOf('</section>', dashboardStart);
+          const dashboardEnd = html.indexOf('<section class="page" id="page-calendar"', dashboardStart);
           const dashboard = html.slice(dashboardStart, dashboardEnd);
           if (/data-goto="(?:grades|faculty|focus|notes)"/.test(dashboard)) throw new Error('Legacy destinations must not appear in dashboard quick actions');
 
