@@ -106,6 +106,8 @@ jobs:
             'bucket.list(prefix',
             'bucket.remove(filePaths.slice',
             'loadWorkspacesBeforeStorageCleanup',
+            '.range(offset,offset+cleanupPageSize-1)',
+            'cleanupJobLimit=1000',
             'cleanupError=cleanup.error'
           ];
           for (const marker of cleanupWorkerMarkers) {
